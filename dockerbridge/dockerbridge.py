@@ -1,4 +1,11 @@
-import os.path
+"""
+    DockerBridge daemon for knowrob/webrob
+
+    This daemon provides control over user containers via a JSON-RPC interface on port 5001. This must run as
+    privileged/root user to access docker.sock - DO NOT DO ANYTHING OTHER THAN DOCKER COMMUNICATION
+    Always sanitize method parameters in methods with @pyjsonrpc.rpcmethod annotation where necessary, as they contain
+    user input.
+"""
 import traceback
 from requests import ConnectionError
 
@@ -77,11 +84,6 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
                         volumes_from=[user_data_container_name,
                                       common_data_container_name])
 
-                # create home directory if it does not exist yet
-                user_home_dir = '/home/ros/user_data/' + user_container_name
-                if not os.path.exists(user_home_dir):
-                    os.makedirs(user_home_dir)
-
         except APIError, e:
             print "APIError:" + str(e.message) + "\n"
             traceback.print_exc()
@@ -111,3 +113,10 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
 
         except ConnectionError, e:
             traceback.print_exc()
+
+
+http_server = pyjsonrpc.ThreadingHttpServer(
+    server_address=('0.0.0.0', 5001),
+    RequestHandlerClass=DockerBridge
+)
+http_server.serve_forever()
