@@ -7,6 +7,8 @@
     user input.
 """
 import traceback
+import signal
+import sys
 from requests import ConnectionError
 
 import docker
@@ -114,6 +116,12 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         except ConnectionError, e:
             traceback.print_exc()
 
+
+def handler(signum, frame):
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, handler)
+signal.signal(signal.SIGINT, handler)
 
 http_server = pyjsonrpc.ThreadingHttpServer(
     server_address=('0.0.0.0', 5001),
