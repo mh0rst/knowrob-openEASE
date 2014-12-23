@@ -1,5 +1,6 @@
 import os.path
 import traceback
+from urllib2 import URLError
 import pyjsonrpc
 
 from flask import session, flash
@@ -50,6 +51,10 @@ def start_container():
         flash("Error: Connection to your KnowRob instance failed.")
         app.logger.error("ConnectionError during connect: " + str(e.message) + str(e.data) + "\n")
         traceback.print_exc()
+    except URLError, e:
+        flash("Error: Connection to your KnowRob instance failed.")
+        app.logger.error("ConnectionError during connect: " + str(e) + "\n")
+        traceback.print_exc()
 
 
 def stop_container():
@@ -62,5 +67,9 @@ def stop_container():
 
     except InternalError, e:
         flash("Error: Connection to your KnowRob instance failed.")
-        app.logger.error("ConnectionError during disconnect: " + str(e.message) + str(e.data) + "\n")
+        app.logger.error("ConnectionError during connect: " + str(e.message) + str(e.data) + "\n")
+        traceback.print_exc()
+    except URLError, e:
+        flash("Error: Connection to your KnowRob instance failed.")
+        app.logger.error("ConnectionError during connect: " + str(e) + "\n")
         traceback.print_exc()
