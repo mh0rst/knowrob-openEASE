@@ -1,2 +1,2 @@
 #!/bin/bash
-docker stop tutorials nginx-proxy mongo_db postgres_db
+docker stop dockerbridge tutorials nginx-proxy mongo_db postgres_db
