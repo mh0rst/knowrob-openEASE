@@ -7,6 +7,7 @@ from docker.errors import *
 from flask import Flask, session, url_for, escape, request, flash
 from requests import ConnectionError
 from flask_user import current_user, login_required
+from pyjsonrpc.rpcerror import InternalError
 from webrob.app_and_db import app
 
 
@@ -44,11 +45,11 @@ def start_container():
         app.logger.info("Connected to docker.")
 
         if c is not None:
-            start_container.start_container(session['user_container_name'],
+            c.start_container(session['user_container_name'],
                                             session['user_data_container_name'],
                                             session['common_data_container_name'])
 
-    except ConnectionError, e:
+    except InternalError, e:
         flash("Error: Connection to your KnowRob instance failed.")
         app.logger.error("ConnectionError during connect:" + str(e.message) + "\n")
         traceback.print_exc()
@@ -59,9 +60,9 @@ def stop_container():
     try:
         c = docker_connect()
         if c is not None:
-            start_container.stop_container(session['user_container_name'])
+            c.stop_container(session['user_container_name'])
 
-    except ConnectionError, e:
+    except InternalError, e:
         flash("Error: Connection to your KnowRob instance failed.")
         app.logger.error("ConnectionError during disconnect:" + str(e.message) + "\n")
         traceback.print_exc()
