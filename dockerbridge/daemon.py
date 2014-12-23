@@ -8,5 +8,5 @@ http_server = pyjsonrpc.ThreadingHttpServer(
     RequestHandlerClass=DockerBridge
 )
 print "Starting DockerBridge ..."
-print "URL: http://0:0:0:0:5001"
+print "URL: http://0.0.0.0:5001"
 http_server.serve_forever()
