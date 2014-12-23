@@ -1,12 +1,8 @@
-import docker
 import os.path
 import traceback
 import pyjsonrpc
-from docker.errors import *
 
-from flask import Flask, session, url_for, escape, request, flash
-from requests import ConnectionError
-from flask_user import current_user, login_required
+from flask import session, flash
 from pyjsonrpc.rpcerror import InternalError
 from webrob.app_and_db import app
 
@@ -45,12 +41,15 @@ def start_container():
         if c is not None:
             c.notify("start_container", session['user_container_name'], session['user_data_container_name'],
                      session['common_data_container_name'])
+            # create home directory if it does not exist yet
+            user_home_dir = '/home/ros/user_data/' + session['user_container_name']
+            if not os.path.exists(user_home_dir):
+                os.makedirs(user_home_dir)
 
     except InternalError, e:
         flash("Error: Connection to your KnowRob instance failed.")
         app.logger.error("ConnectionError during connect: " + str(e.message) + str(e.data) + "\n")
         traceback.print_exc()
-        return None
 
 
 def stop_container():
@@ -65,5 +64,3 @@ def stop_container():
         flash("Error: Connection to your KnowRob instance failed.")
         app.logger.error("ConnectionError during disconnect: " + str(e.message) + str(e.data) + "\n")
         traceback.print_exc()
-        return None
-
