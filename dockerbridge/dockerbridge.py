@@ -71,25 +71,22 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
                     c.create_container('mongo', detach=True, ports=[27017], name='mongo_db')
                     c.start('mongo', port_bindings={27017: 27017}, volumes_from=['mongo_data'])
 
-                containerid = c.start(user_container_name,
-                                      publish_all_ports=True,
-                                      links={('mongo_db', 'mongo')},
-                                      volumes_from=[user_data_container_name,
-                                                    common_data_container_name])
+                c.start(user_container_name,
+                        publish_all_ports=True,
+                        links={('mongo_db', 'mongo')},
+                        volumes_from=[user_data_container_name,
+                                      common_data_container_name])
 
                 # create home directory if it does not exist yet
                 user_home_dir = '/home/ros/user_data/' + user_container_name
                 if not os.path.exists(user_home_dir):
                     os.makedirs(user_home_dir)
-                return containerid
 
         except APIError, e:
             print "APIError:" + str(e.message) + "\n"
             traceback.print_exc()
-            return None
         except ConnectionError, e:
             print "ConnectionError during disconnect:" + str(e.message) + "\n"
-            return None
 
     @pyjsonrpc.rpcmethod
     def stop_container(self, user_container_name):
@@ -114,4 +111,3 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
 
         except ConnectionError, e:
             traceback.print_exc()
-            return None
