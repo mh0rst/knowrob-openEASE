@@ -59,7 +59,7 @@ def stop_container():
     try:
         c = docker_connect()
         if c is not None:
-            c.notify(stop_container, session['user_container_name'])
+            c.notify("stop_container", session['user_container_name'])
             session.pop('user_container_name')
 
     except InternalError, e:
