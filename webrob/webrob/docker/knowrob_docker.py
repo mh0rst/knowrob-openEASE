@@ -45,13 +45,13 @@ def start_container():
         app.logger.info("Connected to docker.")
 
         if c is not None:
-            c.start_container(session['user_container_name'],
-                                            session['user_data_container_name'],
-                                            session['common_data_container_name'])
+            current_user.container_id = c.start_container(session['user_container_name'],
+                                                          session['user_data_container_name'],
+                                                          session['common_data_container_name'])
 
     except InternalError, e:
         flash("Error: Connection to your KnowRob instance failed.")
-        app.logger.error("ConnectionError during connect:" + str(e.message) + "\n")
+        app.logger.error("ConnectionError during connect:" + str(e.message) + str(e.data) + "\n")
         traceback.print_exc()
         return None
 
@@ -64,7 +64,7 @@ def stop_container():
 
     except InternalError, e:
         flash("Error: Connection to your KnowRob instance failed.")
-        app.logger.error("ConnectionError during disconnect:" + str(e.message) + "\n")
+        app.logger.error("ConnectionError during disconnect:" + str(e.message) + str(e.data)  + "\n")
         traceback.print_exc()
         return None
 

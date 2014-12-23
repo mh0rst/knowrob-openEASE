@@ -84,9 +84,11 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
                 return containerid
 
         except APIError, e:
+            print "APIError:" + str(e.message) + "\n"
             traceback.print_exc()
             return None
         except ConnectionError, e:
+            print "ConnectionError during disconnect:" + str(e.message) + "\n"
             return None
 
     @pyjsonrpc.rpcmethod
