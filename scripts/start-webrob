@@ -1,5 +1,23 @@
 #!/bin/bash
 
+bool=true
+
+# runContainer - Creates docker containers if not existing
+#   arg1: <container_name> - String, Name of the container
+#   arg2: <docker_run_parameters> - String, Docker run parameters, excluding --name parameter
+#   arg3: (start_if_not_running) - Boolean, true if container should be started
+function runContainer {
+  RUNNING=$(docker inspect --format="{{ .State.Running }}" $1 2>/dev/null)
+  if [ $? -eq 1 ]; then # container does not exist
+    echo "No $1 container exists, creating a new one..."
+    docker run --name $1 $2
+  fi
+  if [ "$3" == true ] && [ "$RUNNING" == 'false' ]; then # container exists, but stopped
+    echo "$1 container exists, starting it..."
+    docker start $1
+  fi
+}
+
 
 if [ -z "$KNOWROB_WEB_PORT" ]
 then
@@ -8,118 +26,39 @@ fi
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Check if knowrob_data container exists and create otherwise
-RUNNING=$(docker inspect --format="{{ .State.Running }}" knowrob_data 2>/dev/null)
-
-if [ $? -eq 1 ]; then # container does not exist
-  echo "No knowrob_data container exists, creating a new one..."
-  docker run --name knowrob_data knowrob/knowrob_data:latest true
-fi
-
+runContainer "knowrob_data" "knowrob/knowrob_data:latest true"
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Check if user_data container exists and create otherwise
-RUNNING=$(docker inspect --format="{{ .State.Running }}" user_data 2>/dev/null)
-
-if [ $? -eq 1 ]; then # container does not exist
-  echo "No user_data container exists, creating a new one..."
-  docker run --name user_data knowrob/user_data true
-fi
-
-
+runContainer "user_data" "knowrob/user_data true"
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Check if mongo_data container exists and create otherwise
-RUNNING=$(docker inspect --format="{{ .State.Running }}" mongo_data 2>/dev/null)
-
-if [ $? -eq 1 ]; then # container does not exist
-  echo "No mongo_data container exists, creating a new one..."
-  docker run -d -v /data/db --name mongo_data busybox true
-fi
+runContainer "mongo_data" "-d -v /data/db busybox true"
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Check if mongo_db is running or stopped and start otherwise
-
-RUNNING=$(docker inspect --format="{{ .State.Running }}" mongo_db 2>/dev/null)
-
-if [ $? -eq 1 ]; then # container does not exist
-  echo "No MongoDB container exists, creating a new one..."
-  docker run -d -p 27017:27017 --volumes-from mongo_data --name mongo_db mongo
-fi
-
-if [ "$RUNNING" == 'false' ]; then # container exists, but stopped
-  echo "MongoDB container exists, starting it..."
-  docker start mongo_db
-fi
-
-
+runContainer "mongo_db" "-d -p 27017:27017 --volumes-from mongo_data mongo" true
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Check if nginx-proxy is running or stopped and start otherwise
-
-RUNNING=$(docker inspect --format="{{ .State.Running }}" nginx-proxy 2>/dev/null)
-
-if [ $? -eq 1 ]; then # container does not exist
-  echo "No nginx-proxy container exists, creating a new one..."
-  docker run -d -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock --name nginx-proxy -t knowrob/nginx-proxy
-fi
-
-if [ "$RUNNING" == 'false' ]; then # container exists, but stopped
-  echo "nginx-proxy container exists, starting it..."
-  docker start nginx-proxy
-fi
-
+runContainer "nginx-proxy" "-d -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock -t knowrob/nginx-proxy" true
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Check if user_db container exists and create otherwise
-RUNNING=$(docker inspect --format="{{ .State.Running }}" user_db 2>/dev/null)
-
-if [ $? -eq 1 ]; then # container does not exist
-  echo "No user DB container exists, creating a new one..."
-  docker run -d -v /var/lib/postgresql/data --name user_db knowrob/user_db true
-fi
-
+runContainer "user_db" "-d -v /var/lib/postgresql/data knowrob/user_db true"
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Check if postgres_db is running or stopped and start otherwise
-RUNNING=$(docker inspect --format="{{ .State.Running }}" postgres_db 2>/dev/null)
-
-if [ $? -eq 1 ]; then # container does not exist
-  echo "No Postgres container exists, creating a new one..."
-  docker run -d -e "POSTGRES_USER=docker" --volumes-from user_db --name postgres_db knowrob/postgres
-fi
-
-if [ "$RUNNING" == 'false' ]; then # container exists, but stopped
-  echo "Postgres container exists, starting it..."
-  docker start postgres_db
-fi
+runContainer "postgres_db" "-d -e POSTGRES_USER=docker --volumes-from user_db knowrob/postgres" true
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Check if dockerbridge is running or stopped and start otherwise
-RUNNING=$(docker inspect --format="{{ .State.Running }}" dockerbridge 2>/dev/null)
-
-if [ $? -eq 1 ]; then # container does not exist
-  echo "No dockerbridge container exists, creating a new one..."
-  docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name dockerbridge knowrob/dockerbridge
-fi
-
-if [ "$RUNNING" == 'false' ]; then # container exists, but stopped
-  echo "Dockerbridge container exists, starting it..."
-  docker start dockerbridge
-fi
+runContainer "dockerbridge" "-d -v /var/run/docker.sock:/var/run/docker.sock knowrob/dockerbridge" true
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # start a knowrob container for the tutorials
-RUNNING=$(docker inspect --format="{{ .State.Running }}" tutorials 2>/dev/null)
-
-if [ $? -eq 1 ]; then # container does not exist
-  echo "No tutorials container exists, creating a new one..."
-  docker run -e VIRTUAL_HOST=tutorials -e VIRTUAL_PORT=9090 --volumes-from knowrob_data --link mongo_db:mongo --name tutorials -d knowrob/hydro-knowrob-daemon
-fi
-
-if [ "$RUNNING" == 'false' ]; then # container exists, but stopped
-  echo "tutorials container exists, starting it..."
-  docker start tutorials
-fi
+runContainer "tutorials" "-d -e VIRTUAL_HOST=tutorials -e VIRTUAL_PORT=9090 --volumes-from knowrob_data --link mongo_db:mongo knowrob/hydro-knowrob-daemon" true
 
 # Wait for the postgres port to be available
 echo "Waiting for postgres container..."
