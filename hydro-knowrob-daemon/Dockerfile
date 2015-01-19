@@ -9,7 +9,7 @@ ENV HOME /home/ros
 # install helper packages for ROS
 RUN apt-get -y update
 RUN apt-get -y install python-yaml python-catkin-pkg python-rospkg emacs swi-prolog-java ros-hydro-catkin
-RUN apt-get -y install git ros-hydro-iai-common-msgs ros-hydro-rosjava ros-hydro-rosbridge-suite ros-hydro-tf2-web-republisher ros-hydro-mjpeg-server ros-hydro-pr2-description
+RUN apt-get -y install git ros-hydro-iai-common-msgs ros-hydro-rosjava ros-hydro-tf2-web-republisher ros-hydro-mjpeg-server ros-hydro-pr2-description ros-hydro-rosauth
 RUN apt-get -y install mongodb-clients
 
 # ROS environment setup
@@ -42,8 +42,9 @@ RUN /usr/bin/python /opt/ros/hydro/bin/catkin_init_workspace
 
 # dummy 'add' command to always check out the repositories
 #ADD ./Dockerfile /
+RUN git clone https://github.com/mh0rst/rosbridge_suite.git -b secureauth
 RUN git clone --recursive https://github.com/knowrob/knowrob.git -b indigo-devel
-RUN git clone --recursive https://github.com/knowrob/knowrob_addons.git -b indigo-devel
+RUN git clone --recursive https://github.com/mh0rst/knowrob_addons.git -b indigo-devel
 RUN git clone --recursive https://github.com/code-iai/knowrob_dev.git
 RUN git clone https://github.com/code-iai/iai_maps.git
 RUN git clone https://github.com/code-iai/iai_common_msgs.git
@@ -73,13 +74,13 @@ ENV LD_LIBRARY_PATH /home/ros/devel/lib:/opt/ros/hydro/lib:/usr/lib/jvm/default-
 ENV SWI_HOME_DIR /usr/lib/swi-prolog
 ENV PYTHONPATH /home/ros/devel/lib/python2.7/dist-packages:/opt/ros/hydro/lib/python2.7/dist-packages
 
-# forward ports: KnowRob webserver + rosbridge
-EXPOSE 1111 9090
+# forward ports: rosbridge
+EXPOSE 9090
 
 
 # Volumes for mounting data containers
 VOLUME /home/ros/knowrob_data
 VOLUME /home/ros/sandbox
 
-ENTRYPOINT /opt/ros/hydro/bin/roslaunch knowrob_roslog_launch knowrob.launch
+ENTRYPOINT /opt/ros/hydro/bin/roslaunch knowrob_roslog_launch knowrob_ws.launch
 
