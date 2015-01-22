@@ -66,7 +66,7 @@ runContainer "dockerbridge" "-d -v /var/run/docker.sock:/var/run/docker.sock kno
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # start a knowrob container for the tutorials
-runContainer "tutorials" "-d -e VIRTUAL_HOST=tutorials -e VIRTUAL_PORT=9090 --volumes-from knowrob_data --link mongo_db:mongo knowrob/hydro-knowrob-daemon" true
+runContainer "tutorials" "-d -e VIRTUAL_HOST=tutorials -e VIRTUAL_PORT=9090 --volumes-from knowrob_data -v /home/ros/user_data/secret:/etc/rosauth/secret --link mongo_db:mongo knowrob/hydro-knowrob-daemon" true
 
 # Wait for the postgres port to be available
 echo "Waiting for postgres container..."

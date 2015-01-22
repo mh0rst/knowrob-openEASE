@@ -62,6 +62,7 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
                                        detach=True,
                                        tty=True,
                                        environment=env,
+                                       volumes={'/home/ros/user_data/secret': '/etc/rosauth/secret'},
                                        name=user_container_name)
 
                 if not user_data_cont_exists:
@@ -72,7 +73,7 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
                 if not common_data_exists:
                     c.create_container('knowrob/knowrob_data', detach=True, name=common_data_container_name,
                                        entrypoint='true')
-                    c.start(name=common_data_container_name)
+                    c.start(common_data_container_name)
 
                 if not mongo_cont_exists:
                     c.create_container('busybox', detach=True, name='mongo_data', volumes=['/data/db'],
