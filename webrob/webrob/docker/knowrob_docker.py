@@ -67,3 +67,15 @@ def stop_container():
     except URLError, e:
         flash("Error: Connection to your KnowRob instance failed.")
         app.logger.error("ConnectionError during connect: " + str(e) + "\n")
+
+def get_container_ip():
+    try:
+        c = docker_connect()
+        if c is not None:
+            return c.get_container_ip(session['user_container_name'])
+    except InternalError, e:
+        flash("Error: Connection to your KnowRob instance failed.")
+        app.logger.error("ConnectionError during connect: " + str(e.message) + str(e.data) + "\n")
+    except URLError, e:
+        flash("Error: Connection to your KnowRob instance failed.")
+        app.logger.error("ConnectionError during connect: " + str(e) + "\n")
