@@ -62,7 +62,7 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
                                        detach=True,
                                        tty=True,
                                        environment=env,
-                                       volumes={'/home/ros/user_data/secret': '/etc/rosauth/secret'},
+                                       volumes=['/etc/rosauth/secret'],
                                        name=user_container_name)
 
                 if not user_data_cont_exists:
@@ -82,6 +82,7 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
                     c.start('mongo', port_bindings={27017: 27017}, volumes_from=['mongo_data'])
 
                 c.start(user_container_name,
+                        binds={'/home/ros/user_data/secret': {'bind': '/etc/rosauth/secret', 'ro': True}},
                         publish_all_ports=True,
                         links={('mongo_db', 'mongo')},
                         volumes_from=[user_data_container_name,
@@ -117,6 +118,16 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         except ConnectionError, e:
             print "ConnectionError during disconnect:" + str(e.message) + "\n"
 
+    @pyjsonrpc.rpcmethod
+    def get_container_ip(self, user_container_name):
+        try:
+            c = docker_connect()
+
+            if c is not None:
+                inspect = c.inspect_container(user_container_name)
+                return inspect['NetworkSettings']['IPAddress']
+        except:
+            return 'error'
 
 def handler(signum, frame):
     sys.exit(0)
