@@ -83,7 +83,7 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
 
                 c.start(user_container_name,
                         binds={'/home/ros/user_data/secret': {'bind': '/etc/rosauth/secret', 'ro': True}},
-                        publish_all_ports=True,
+                        port_bindings={9090: None},
                         links={('mongo_db', 'mongo')},
                         volumes_from=[user_data_container_name,
                                       common_data_container_name])
