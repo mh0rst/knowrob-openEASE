@@ -1,5 +1,6 @@
 
-from flask import session, redirect, url_for, render_template
+from flask import session, request, redirect, url_for, render_template
+from urlparse import urlparse
 from flask.ext.user.signals import user_logged_in
 from flask.ext.user.signals import user_logged_out
 from flask_user import current_user
@@ -32,9 +33,10 @@ def show_user_data():
     if not current_user.is_authenticated():
         return redirect(url_for('user.login'))
     
-    overlay = None
-    if session.get('show_loading_overlay'):
-        overlay = True
-        session.pop('show_loading_overlay')
+    error=""
+    # determine hostname/IP we are currently using
+    # (needed for accessing container)
+    host_url = urlparse(request.host_url).hostname
+    container_name = session['user_container_name']
 
-    return render_template('show_user_data.html', overlay=overlay)
+    return render_template('show_user_data.html', **locals())
