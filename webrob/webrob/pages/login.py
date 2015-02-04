@@ -28,6 +28,7 @@ def track_login(sender, user, **extra):
 @user_logged_out.connect_via(app)
 def track_logout(sender, user, **extra):
     knowrob_docker.stop_container(session['user_container_name'])
+    session.pop('user_container_name')
     #sender.logger.info('user logged out')
 
 @app.route('/')

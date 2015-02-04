@@ -2,7 +2,7 @@ import os.path
 from urllib2 import URLError
 import pyjsonrpc
 
-from flask import session, flash
+from flask import flash
 from pyjsonrpc.rpcerror import InternalError
 from webrob.app_and_db import app
 
@@ -16,6 +16,7 @@ def docker_connect():
             + os.environ['DOCKERBRIDGE_PORT_5001_TCP_PORT']
     )
     return http_client
+
 
 def start_container(user_container_name, user_data_container_name, common_data_container_name, user_home_dir):
     try:
@@ -37,12 +38,10 @@ def start_container(user_container_name, user_data_container_name, common_data_c
 
 
 def stop_container(user_container_name):
-
     try:
         c = docker_connect()
         if c is not None:
             c.notify("stop_container", user_container_name)
-            session.pop('user_container_name')
 
     except InternalError, e:
         flash("Error: Connection to your KnowRob instance failed.")
@@ -50,6 +49,7 @@ def stop_container(user_container_name):
     except URLError, e:
         flash("Error: Connection to your KnowRob instance failed.")
         app.logger.error("ConnectionError during connect: " + str(e) + "\n")
+
 
 def get_container_ip(user_container_name):
     try:

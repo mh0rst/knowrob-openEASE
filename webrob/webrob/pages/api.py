@@ -1,6 +1,6 @@
 from Crypto.Random import random
 from flask import jsonify, request, session
-from flask_login import current_user, login_user
+from flask_login import current_user
 import hashlib
 import string
 import time
@@ -9,6 +9,7 @@ from webrob.docker import knowrob_docker
 from webrob.models.users import User
 
 __author__ = 'mhorst@cs.uni-bremen.de'
+
 
 @app.route('/api/v1.0/auth_by_session', methods=['GET'])
 def login_by_session():
@@ -19,6 +20,7 @@ def login_by_session():
     if current_user.is_authenticated():
         return generate_rosauth(session['container_ip'])
     return jsonify({'error': 'not authenticated'})
+
 
 @app.route('/api/v1.0/auth_by_token/<string:token>', methods=['GET'])
 def login_by_token(token):
@@ -32,6 +34,7 @@ def login_by_token(token):
     ip = knowrob_docker.get_container_ip(user.username)
     return generate_rosauth(ip)
 
+
 @app.route('/api/v1.0/start_container/<string:token>', methods=['GET'])
 def start_container(token):
     """
@@ -42,6 +45,7 @@ def start_container(token):
         return jsonify({'error': 'wrong api token'})
     knowrob_docker.start_container(user.username, 'user_data', 'knowrob_data', '/home/ros/user_data/' + user.username)
     return jsonify({'result': 'success'})
+
 
 @app.route('/api/v1.0/stop_container/<string:token>', methods=['GET'])
 def stop_container(token):
