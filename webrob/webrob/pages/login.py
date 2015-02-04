@@ -17,15 +17,17 @@ def track_login(sender, user, **extra):
     session['exp'] = None
     session['user_home_dir'] = '/home/ros/user_data/' + session['user_container_name']
     session['show_loading_overlay'] = True
+    session['api_token'] = user.api_token
     if not 'pkg' in session: session['pkg'] = ''
     
-    knowrob_docker.start_container()
-    session['container_ip'] = knowrob_docker.get_container_ip()
+    knowrob_docker.start_container(session['user_container_name'], session['user_data_container_name'],
+                                   session['common_data_container_name'],session['user_home_dir'])
+    session['container_ip'] = knowrob_docker.get_container_ip(session['user_container_name'])
     #sender.logger.info('user logged in')
 
 @user_logged_out.connect_via(app)
 def track_logout(sender, user, **extra):
-    knowrob_docker.stop_container()
+    knowrob_docker.stop_container(session['user_container_name'])
     #sender.logger.info('user logged out')
 
 @app.route('/')

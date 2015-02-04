@@ -43,7 +43,7 @@ def init_app(app, db, extra_config_settings={}):
     from webrob.pages import editor
     from webrob.pages import log
     from webrob.pages import login
-    from webrob.pages import auth_api
+    from webrob.pages import api
 
     init_db(app, db)
 

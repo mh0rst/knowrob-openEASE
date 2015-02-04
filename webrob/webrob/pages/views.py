@@ -1,5 +1,5 @@
 
-from flask import session, jsonify, request, render_template, Markup, send_from_directory
+from flask import jsonify, redirect, render_template, Markup, send_from_directory
 from flask_user import login_required
 from flask.ext.misaka import markdown
 
@@ -9,6 +9,7 @@ import json
 from urlparse import urlparse
 
 from webrob.app_and_db import app, db
+from webrob.pages import api
 from webrob.user.knowrob_user import read_tutorial_page
 
 from utility import *
@@ -160,6 +161,11 @@ def get_history_item():
   else:
     return jsonify(item="", index=-1)
 
+@app.route('/create_api_token', methods=['GET'])
+@login_required
+def create_api_token():
+    api.create_token()
+    return redirect('/')
 
 def get_history_file():
   userDir = get_user_dir()

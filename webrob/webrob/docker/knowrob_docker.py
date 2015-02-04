@@ -17,33 +17,16 @@ def docker_connect():
     )
     return http_client
 
-
-#def create_data_containers():
-
-    #try:
-        #c = docker_connect()
-
-        #session['user_data_container_name'] = session['username'] + "_data"
-        #session['common_data_container_name'] = "knowrob_data"
-
-        #if(c is not None):
-            #c.create_container('knowrob/user_data', detach=True, tty=True, name=session['user_data_container_name'])
-
-    #except ConnectionError:
-        #flash("Error: Connection to your KnowRob instance failed.")
-        #return None
-
-
-def start_container():
+def start_container(user_container_name, user_data_container_name, common_data_container_name, user_home_dir):
     try:
         c = docker_connect()
 
         if c is not None:
-            c.notify("start_container", session['user_container_name'], session['user_data_container_name'],
-                     session['common_data_container_name'])
+            c.notify("start_container", user_container_name,user_data_container_name,
+                     common_data_container_name)
             # create home directory if it does not exist yet
-            if not os.path.exists(session['user_home_dir']):
-                os.makedirs(session['user_home_dir'])
+            if not os.path.exists(user_home_dir):
+                os.makedirs(user_home_dir)
 
     except InternalError, e:
         flash("Error: Connection to your KnowRob instance failed.")
@@ -53,12 +36,12 @@ def start_container():
         app.logger.error("ConnectionError during connect: " + str(e) + "\n")
 
 
-def stop_container():
+def stop_container(user_container_name):
 
     try:
         c = docker_connect()
         if c is not None:
-            c.notify("stop_container", session['user_container_name'])
+            c.notify("stop_container", user_container_name)
             session.pop('user_container_name')
 
     except InternalError, e:
@@ -68,11 +51,11 @@ def stop_container():
         flash("Error: Connection to your KnowRob instance failed.")
         app.logger.error("ConnectionError during connect: " + str(e) + "\n")
 
-def get_container_ip():
+def get_container_ip(user_container_name):
     try:
         c = docker_connect()
         if c is not None:
-            return c.get_container_ip(session['user_container_name'])
+            return c.get_container_ip(user_container_name)
     except InternalError, e:
         flash("Error: Connection to your KnowRob instance failed.")
         app.logger.error("ConnectionError during connect: " + str(e.message) + str(e.data) + "\n")

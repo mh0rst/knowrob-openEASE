@@ -78,7 +78,8 @@
       knowrob = new Knowrob({
           ros_url: wsproto + '://{{ host_url }}/ws/{{ container_name }}/',
           library_file: libraryFile,
-          authentication: true
+          authentication: true,
+          auth_url: '/api/v1.0/auth_by_session'
       });
       knowrob.init();
     });
