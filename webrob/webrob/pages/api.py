@@ -4,6 +4,7 @@ from flask_login import current_user
 import hashlib
 import string
 import time
+from urlparse import urlparse
 from webrob.app_and_db import app, db
 from webrob.docker import knowrob_docker
 from webrob.models.users import User
@@ -38,13 +39,16 @@ def login_by_token(token):
 @app.route('/api/v1.0/start_container/<string:token>', methods=['GET'])
 def start_container(token):
     """
-    Starts the container of the user assigned to the given API token.
+    Starts the container of the user assigned to the given API token. The WebSocket url to the users rosbridge instance
+    will be returned on success.
     """
     user = user_by_token(token)
     if user is None:
         return jsonify({'error': 'wrong api token'})
     knowrob_docker.start_container(user.username, 'user_data', 'knowrob_data', '/home/ros/user_data/' + user.username)
-    return jsonify({'result': 'success'})
+    host_url = urlparse(request.host_url).hostname
+    return jsonify({'result': 'success',
+                    'url': '//'+host_url+'/ws/'+user.username+'/'})
 
 
 @app.route('/api/v1.0/stop_container/<string:token>', methods=['GET'])
