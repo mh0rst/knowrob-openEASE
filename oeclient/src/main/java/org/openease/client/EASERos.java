@@ -8,6 +8,11 @@ import javax.net.ssl.SSLContext;
 import javax.websocket.ClientEndpoint;
 import javax.websocket.ContainerProvider;
 import javax.websocket.DeploymentException;
+import javax.websocket.OnClose;
+import javax.websocket.OnError;
+import javax.websocket.OnMessage;
+import javax.websocket.OnOpen;
+import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
@@ -38,6 +43,16 @@ public class EASERos extends Ros {
     @Override
     public String getURL() {
         return this.url;
+    }
+
+    /**
+     * Sets the SSLContext for the web socket implementation.
+     * 
+     * @param sslContext
+     *            SSLContext
+     */
+    void setSSLContext(SSLContext sslContext) {
+        this.sslContext = sslContext;
     }
 
     @Override
@@ -71,13 +86,32 @@ public class EASERos extends Ros {
         }
     }
 
-    /**
-     * Sets the SSLContext for the web socket implementation.
-     * 
-     * @param sslContext
-     *            SSLContext
+    /*
+     * The following methods are defined to re-register the OnX annotations. All calls are delegated to the super class.
      */
-    void setSSLContext(SSLContext sslContext) {
-        this.sslContext = sslContext;
+
+    @OnOpen
+    @Override
+    public void onOpen(Session session) {
+        super.onOpen(session);
     }
+
+    @OnClose
+    @Override
+    public void onClose(Session session) {
+        super.onClose(session);
+    }
+
+    @OnError
+    @Override
+    public void onError(Session session, Throwable t) {
+        super.onError(session, t);
+    }
+
+    @OnMessage
+    @Override
+    public void onMessage(String message) {
+        super.onMessage(message);
+    }
+
 }
