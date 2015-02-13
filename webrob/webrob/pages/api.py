@@ -83,7 +83,7 @@ def generate_rosauth(dest):
     :param dest: IP of the destination
     :return: a json object for ros
     """
-    secret = "RW6WZ2yp67ETMdj2" #TODO customize for each user
+    secret = "RW6WZ2yp67ETMdj2"  # TODO customize for each user
     client = request.remote_addr
 
     rand = "".join([random.choice(string.ascii_letters + string.digits) for n in xrange(30)])

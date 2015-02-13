@@ -129,6 +129,20 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         except:
             return 'error'
 
+    @pyjsonrpc.rpcmethod
+    def get_container_log(self, user_container_name):
+        try:
+            c = docker_connect()
+            logger = c.logs(user_container_name, stdout=True, stderr=True, stream=False, timestamps=False)
+            logstr = ""
+            # TODO: limit number of lines!
+            # It seems for a long living container the log gets to huge.
+            for line in logger:
+                logstr += line
+            return logstr
+        except:
+            return 'error'
+
 def handler(signum, frame):
     sys.exit(0)
 
