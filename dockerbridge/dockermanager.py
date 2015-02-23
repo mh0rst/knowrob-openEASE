@@ -48,6 +48,7 @@ class DockerManager(object):
 
                 # Create containers if they do not exist yet
                 if not user_cont_exists:
+                    sysout("Creating user container " + user_container_name)
                     env = {"VIRTUAL_HOST": user_container_name,
                            "VIRTUAL_PORT": '9090',
                            "ROS_PACKAGE_PATH": ":".join([
@@ -64,21 +65,25 @@ class DockerManager(object):
                                        name=user_container_name)
 
                 if not user_data_cont_exists:
+                    sysout("Creating user_data container.")
                     c.create_container('knowrob/user_data', detach=True, tty=True, name=user_data_container_name,
                                        entrypoint='true')
                     c.start(user_data_container_name)
 
                 if not common_data_exists:
+                    sysout("Creating knowrob_data container.")
                     c.create_container('knowrob/knowrob_data', detach=True, name=common_data_container_name,
                                        entrypoint='true')
                     c.start(common_data_container_name)
 
                 if not mongo_cont_exists:
+                    sysout("Creating mongo container.")
                     c.create_container('busybox', detach=True, name='mongo_data', volumes=['/data/db'],
                                        entrypoint='true')
                     c.create_container('mongo', detach=True, name='mongo_db')
                     c.start('mongo', volumes_from=['mongo_data'])
 
+                sysout("Starting user container " + user_container_name)
                 c.start(user_container_name,
                         binds={'/home/ros/user_data/secret': {'bind': '/etc/rosauth/secret', 'ro': True}},
                         port_bindings={9090: None},
@@ -104,8 +109,10 @@ class DockerManager(object):
                         user_cont_exists = True
 
                 if user_cont_exists:
+                    sysout("Stopping container " + user_container_name + "...\n")
                     c.stop(user_container_name, timeout=5)
 
+                    sysout("Removing container " + user_container_name + "...\n")
                     c.remove_container(user_container_name)
         except (APIError, DockerException), e:
             sysout("Error:" + str(e.message) + "\n")
@@ -131,4 +138,5 @@ class DockerManager(object):
                 logstr += line
             return logstr
         except (APIError, DockerException), e:
+            sysout("Error:" + str(e.message) + "\n")
             return 'error'
