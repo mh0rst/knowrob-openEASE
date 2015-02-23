@@ -1,0 +1,49 @@
+{
+    "query": [
+        {
+            "q": "",
+            "text": "----- init -----"
+        },
+        {
+            "q": "register_ros_package(knowrob_saphari).",
+            "text": "Initialize SAPHARI context"
+        },
+        {
+            "q": "load_experiments('/home/ros/knowrob_data/logs/saphari/', 'cram_log.owl').",
+            "text": "Load logged experiments"
+        },
+        {
+            "q": "owl_parse('package://knowrob_saphari/owl/saphari_map.owl'), add_object_with_children('http://knowrob.org/kb/saphari_map.owl#Map_SAPHARI').",
+            "text": "Load semantic map"
+        },
+        {
+            "q": "findall([_Obj,_Time], (owl_individual_of(_Perception, knowrob:'UIMAPerception'), owl_has(_Perception, knowrob:'perceptionResult', _Obj), owl_has(_Perception, knowrob:'endTime', _Time)), _Objs), member([Obj,Time], _Objs), belief_at(loc(Obj,Loc), Time), add_object_as_semantic_instance(Obj, Loc, Time, Instance), add_object_with_children(Instance).",
+            "text": "Show perceived objects"
+        },
+        {
+            "q": "",
+            "text": "----- Queries on controller designators -----"
+        },
+        {
+            "q": "action_designator('REPLACEABLE-FUNCTION-MOVE-DOWN-UNTIL-TOUCH', Timepoint, Designator), mng_designator(Designator, _DesigJava), mng_designator_property(Designator, _DesigJava, ['CONTACT-STRATEGIES', 'SEVERE-COLLISION'], Policy).",
+            "text": "What was the collision strategy during the experiment?"
+        },
+        
+        {
+            "q": "action_designator('REPLACEABLE-FUNCTION-MOVE-OVER-OBJECT', Timepoint, Designator), mng_designator(Designator, _DesigJava), mng_designator_property(Designator, _DesigJava, ['ARM'], 'RIGHT'), mng_designator_property(Designator, _DesigJava, ['OBJECT', 'RESPONSE'], Object).",
+            "text": "Over which objects did the robot moved the right arm?"
+        },
+        {
+            "q": "",
+            "text": "----- Queries on the robot's logged belief state -----"
+        },
+        {
+            "q": "owl_individual_of(_I, saphari:'HumanIntrusion'), owl_has(_I, knowrob:'startTime', T), owl_has(_I, knowrob:'designator', _D), mng_designator_props(_D, 'TF-PREFIX', _Prefix), intrusion_link(openni_human:'iai_human_robot1', _Prefix, T, BodyPart).",
+            "text": "Which body parts of the human intersected the safety area at first?"
+        },
+        {
+            "q": "owl_individual_of(I, saphari:'HumanIntrusion'), owl_has(I, knowrob:'startTime', T), saphari_visualize_agents(T).",
+            "text": "What was the pose of agents when intrusion events occurred?"
+        }
+    ]
+}
