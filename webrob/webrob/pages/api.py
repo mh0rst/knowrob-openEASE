@@ -84,7 +84,7 @@ def refresh_by_token(token):
     user = user_by_token(token)
     if user is None:
         return jsonify({'error': 'wrong api token'})
-    knowrob_docker.refresh(current_user.username)
+    knowrob_docker.refresh(user.username)
     return jsonify({'result': 'success'})
 
 
