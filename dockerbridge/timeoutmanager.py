@@ -7,21 +7,11 @@ remove(client). You can reset the timeout for a client by calling resetTimeout, 
 timeout was previously assigned to that client.
 """
 
-import sys
 from thread import start_new_thread
 from time import sleep, time
+from dockerbridge import sysout
 
-__author__ = 'moritz'
-out = sys.stdout
-
-
-def sysout(msg):
-    """
-    Handles logging output
-    :param msg: Message to print
-    """
-    out.write(msg + "\n")
-    out.flush()
+__author__ = 'mhorst@cs.uni-bremen.de'
 
 
 class TimeoutManager(object):

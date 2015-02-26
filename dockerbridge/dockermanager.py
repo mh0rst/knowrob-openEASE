@@ -1,19 +1,11 @@
+"""
+The DockerManager handles all communication with docker api and provides an API for all actions webrob need to perform
+with the docker host.
+"""
 import docker
 from docker.errors import *
 import traceback
-import sys
-
-__author__ = 'moritz'
-out = sys.stdout
-
-
-def sysout(msg):
-    """
-    Handles logging output, because pyjsonrpc hijacks stdout.
-    :param msg: Message to print
-    """
-    out.write(msg + "\n")
-    out.flush()
+from dockerbridge import sysout
 
 
 class DockerManager(object):
