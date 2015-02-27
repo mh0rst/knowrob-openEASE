@@ -9,7 +9,7 @@ timeout was previously assigned to that client.
 
 from thread import start_new_thread
 from time import sleep, time
-from dockerbridge import sysout
+from utils import sysout
 
 __author__ = 'mhorst@cs.uni-bremen.de'
 

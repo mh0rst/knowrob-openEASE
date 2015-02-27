@@ -1,3 +1,4 @@
+import hashlib
 import os.path
 from urllib2 import URLError
 import pyjsonrpc
@@ -5,10 +6,12 @@ import pyjsonrpc
 from flask import flash
 from pyjsonrpc.rpcerror import InternalError
 from webrob.app_and_db import app
+from webrob.pages.utility import write_text_file, random_string
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Docker stuff
+
 
 def docker_connect():
     http_client = pyjsonrpc.HttpClient(
@@ -18,11 +21,29 @@ def docker_connect():
     return http_client
 
 
+def generate_secret(user_container_name):
+    path = '/tmp/easesecrets/' + user_container_name
+    if not os.path.exists(path):
+        os.makedirs(path)
+    write_text_file(path + '/secret', random_string(16))
+
+
+def generate_mac(user_container_name, client, dest, rand, t, level, end):
+    """
+    Generate the mac for use with rosauth. Choose params according to rosauth specification.
+    """
+    f = open('/tmp/easesecrets/' + user_container_name + '/secret', 'r')
+    secret = f.readline()
+    f.close()
+    return hashlib.sha512(secret + client + dest + rand + str(t) + level + str(end)).hexdigest()
+
+
 def start_container(user_container_name, user_data_container_name, common_data_container_name, user_home_dir):
     try:
         c = docker_connect()
 
         if c is not None:
+            generate_secret(user_container_name)
             c.notify("start_container", user_container_name,user_data_container_name,
                      common_data_container_name)
             # create home directory if it does not exist yet

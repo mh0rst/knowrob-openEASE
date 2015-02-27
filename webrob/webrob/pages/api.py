@@ -1,13 +1,12 @@
-from Crypto.Random import random
 from flask import jsonify, request, session
 from flask_login import current_user
-import hashlib
-import string
 import time
 from urlparse import urlparse
 from webrob.app_and_db import app, db
 from webrob.docker import knowrob_docker
+from webrob.docker.knowrob_docker import generate_mac
 from webrob.models.users import User
+from webrob.pages.utility import random_string
 
 __author__ = 'mhorst@cs.uni-bremen.de'
 
@@ -19,7 +18,7 @@ def login_by_session():
     request
     """
     if current_user.is_authenticated():
-        return generate_rosauth(session['container_ip'])
+        return generate_rosauth(session['user_container_name'], session['container_ip'])
     return jsonify({'error': 'not authenticated'})
 
 
@@ -45,7 +44,7 @@ def login_by_token(token):
     if user is None:
         return jsonify({'error': 'wrong api token'})
     ip = knowrob_docker.get_container_ip(user.username)
-    return generate_rosauth(ip)
+    return generate_rosauth(user.username, ip)
 
 
 @app.route('/api/v1.0/start_container/<string:token>', methods=['GET'])
@@ -89,7 +88,7 @@ def refresh_by_token(token):
 
 
 def create_token():
-    current_user.api_token = "".join([random.choice(string.ascii_letters + string.digits) for n in xrange(64)])
+    current_user.api_token = random_string(64)
     db.session.commit()
     session['api_token'] = current_user.api_token
 
@@ -101,25 +100,25 @@ def user_by_token(token):
     return User.query.filter_by(api_token=token).first()
 
 
-def generate_rosauth(dest):
+def generate_rosauth(user_container_name, dest):
     """
     Generate the mac for use with rosauth and compile a json object with all necessary information to authenticate
     with the server.
+    :param user_container_name: Name of the user container
     :param dest: IP of the destination
     :return: a json object for ros
     """
-    secret = "RW6WZ2yp67ETMdj2"  # TODO customize for each user
     client = request.remote_addr
 
-    rand = "".join([random.choice(string.ascii_letters + string.digits) for n in xrange(30)])
+    rand = random_string(30)
 
     t = int(time.time())
     level = "user"
     end = int(t + 3600)
 
-    mac = hashlib.sha512(secret + client + dest + rand + str(t) + level + str(end)).hexdigest()
+
     return jsonify({
-            'mac': mac,
+            'mac': generate_mac(user_container_name, client, dest, rand, t, level, end),
             'client': client,
             'dest': dest,
             'rand': rand,

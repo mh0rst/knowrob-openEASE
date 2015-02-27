@@ -25,6 +25,9 @@ then
    export KNOWROB_WEB_PORT=5000
 fi
 
+# Make tmp secret directory
+mkdir -p /tmp/easesecrets
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Check if knowrob_data container exists and create otherwise
 runContainer "knowrob_data" "knowrob/knowrob_data:latest true"
@@ -70,7 +73,9 @@ runContainer "dockerbridge" "-d -v /var/run/docker.sock:/var/run/docker.sock kno
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # start a knowrob container for the tutorials
-#runContainer "tutorials" "-d -e VIRTUAL_HOST=tutorials -e VIRTUAL_PORT=9090 --volumes-from knowrob_data -v /home/ros/user_data/secret:/etc/rosauth/secret --link mongo_db:mongo knowrob/hydro-knowrob-daemon" true
+#mkdir -p /tmp/easesecrets/tutorials
+#< /dev/urandom tr -dc _A-Z-a-z-0-9 | head --bytes=16 > /tmp/easesecrets/tutorials/secret
+#runContainer "tutorials" "-d -e VIRTUAL_HOST=tutorials -e VIRTUAL_PORT=9090 --volumes-from knowrob_data -v /tmp/easesecrets/tutorials/secret:/etc/rosauth/secret --link mongo_db:mongo knowrob/hydro-knowrob-daemon" true
 
 # Wait for the postgres port to be available
 echo "Waiting for postgres container..."
@@ -96,6 +101,7 @@ docker run --rm -i -p 127.0.0.1:$KNOWROB_WEB_PORT:5000 \
     --volumes-from knowrob_data \
     --volumes-from user_data \
     --volumes-from mesh_data \
+    -v /tmp/easesecrets:/tmp/easesecrets \
     --link postgres_db:postgres \
     --link dockerbridge:dockerbridge \
     -e VIRTUAL_HOST=webrob \

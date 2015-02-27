@@ -10,19 +10,10 @@ import signal
 import sys
 
 import pyjsonrpc
+
 from dockermanager import DockerManager
 from timeoutmanager import TimeoutManager
-
-out = sys.stdout
-
-
-def sysout(msg):
-    """
-    Handles logging output, because pyjsonrpc hijacks stdout.
-    :param msg: Message to print
-    """
-    out.write(msg + "\n")
-    out.flush()
+from utils import sysout
 
 
 class DockerBridge(pyjsonrpc.HttpRequestHandler):

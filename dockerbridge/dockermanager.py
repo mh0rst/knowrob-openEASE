@@ -5,7 +5,7 @@ with the docker host.
 import docker
 from docker.errors import *
 import traceback
-from dockerbridge import sysout
+from utils import sysout
 
 
 class DockerManager(object):
@@ -77,7 +77,8 @@ class DockerManager(object):
 
                 sysout("Starting user container " + user_container_name)
                 c.start(user_container_name,
-                        binds={'/home/ros/user_data/secret': {'bind': '/etc/rosauth/secret', 'ro': True}},
+                        binds={'/tmp/easesecrets/' + user_container_name + '/secret':
+                                   {'bind': '/etc/rosauth/secret', 'ro': True}},
                         port_bindings={9090: None},
                         links={('mongo_db', 'mongo')},
                         volumes_from=[user_data_container_name,
