@@ -4,6 +4,7 @@ docker pull mongo
 docker pull nginx
 docker pull jwilder/docker-gen
 docker pull knowrob/hydro-knowrob-daemon
+docker pull knowrob/dockerbridge
 docker pull knowrob/webrob
 docker pull knowrob/user_db
 docker pull knowrob/user_data
