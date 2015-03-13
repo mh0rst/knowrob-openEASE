@@ -1,4 +1,4 @@
-from flask import jsonify, request, session
+from flask import jsonify, request, session, redirect
 from flask_login import current_user
 from flask_user import login_required
 import time
@@ -19,7 +19,8 @@ def login_by_session():
     request
     """
     if current_user.is_authenticated():
-        return generate_rosauth(session['user_container_name'], session['container_ip'])
+        ip = knowrob_docker.get_container_ip(session['user_container_name'])
+        return generate_rosauth(session['user_container_name'], ip)
     return jsonify({'error': 'not authenticated'})
 
 
@@ -57,7 +58,8 @@ def start_container(token):
     user = user_by_token(token)
     if user is None:
         return jsonify({'error': 'wrong api token'})
-    knowrob_docker.start_container(user.username, 'user_data', 'knowrob_data', '/home/ros/user_data/' + user.username)
+    #knowrob_docker.start_user_container(user.username, '/home/ros/user_data/' + user.username)
+    #TODO doesn't work, wat do?
     host_url = urlparse(request.host_url).hostname
     return jsonify({'result': 'success',
                     'url': '//'+host_url+'/ws/'+user.username+'/'})

@@ -12,6 +12,7 @@ BUILDOPTS["webapps"]=false
 
 BUILDOPTS["nocache"]=false
 BUILDOPTS["clean"]=false
+BUILDOPTS["stopcache"]=false
 BUILDOPTS["help"]=false
 
 for var in "$@"
@@ -33,6 +34,7 @@ if ${BUILDOPTS["help"]}; then
 	echo ""
 	echo "  == Options for build =="
 	echo "  nocache - Runs docker build with --no-cache option"
+    echo "  stopcache - Stops the cache containers"
 	echo "  clean - Runs cleanup script after build"
 	echo "  == Misc options =="
 	echo "  help - Prints this message and exits"
@@ -73,8 +75,10 @@ if ${BUILDOPTS["webapps"]} || ${BUILDOPTS["default"]} || ${BUILDOPTS["all"]}; th
 	build webapps/knowrob openease/knowrob
 fi
 
-echo "Stopping caching containers..."
-docker stop -t 3 apt-cacher-run nexus-run
+if ${BUILDOPTS["stopcache"]}; then
+	echo "Stopping caching containers..."
+	docker stop -t 3 apt-cacher-run nexus-run
+fi
 
 if ${BUILDOPTS["clean"]}; then
 	echo "Cleaning docker images..."

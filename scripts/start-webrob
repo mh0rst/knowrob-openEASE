@@ -83,7 +83,7 @@ runContainer "postgres_db" "-d -e POSTGRES_USER=docker --volumes-from user_db kn
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Check if dockerbridge is running or stopped and start otherwise
-runContainer "dockerbridge" "-d -v /var/run/docker.sock:/var/run/docker.sock knowrob/dockerbridge" true
+runContainer "dockerbridge" "-d -v /var/run/docker.sock:/var/run/docker.sock -e KNOWROB_SECRETS_DIR=$KNOWROB_SECRETS_DIR knowrob/dockerbridge" true
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # start a knowrob container for the tutorials

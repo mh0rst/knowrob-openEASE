@@ -43,7 +43,7 @@ def start_user_container(container_name, user_home_dir, application_container, l
         c = docker_connect()
 
         if c is not None:
-            generate_secret(user_container_name)
+            generate_secret(container_name)
             c.notify("start_user_container", container_name, application_container, links, volumes)
             # create home directory if it does not exist yet
             if not os.path.exists(user_home_dir):

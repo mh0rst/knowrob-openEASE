@@ -2,11 +2,13 @@
 The DockerManager handles all communication with docker api and provides an API for all actions webrob need to perform
 with the docker host.
 """
+import os
 import docker
 from docker.errors import *
 import traceback
 from utils import sysout
 
+secretsDir = os.environ["KNOWROB_SECRETS_DIR"]
 
 class DockerManager(object):
     @staticmethod
@@ -43,8 +45,8 @@ class DockerManager(object):
 
         if not self.__container_exists__("mongo_db", all_containers):
             sysout("Creating mongo container.")
-            c.create_container('mongo', detach=True, ports=[27017], name='mongo_db')
-            c.start('mongo', port_bindings={27017: 27017}, volumes_from=['mongo_data'])
+            c.create_container('mongo', detach=True, name='mongo_db')
+            c.start('mongo', volumes_from=['mongo_data'])
 
     def start_user_container(self, container_name, application_container, links, volumes):
         try:
@@ -66,11 +68,12 @@ class DockerManager(object):
                             "/opt/ros/hydro/stacks",
                             "/home/ros/user_data/" + container_name
                 ])}
-                c.create_container(application_container, detach=True, tty=True, environment=env, volumes=['/etc/rosauth/secret'], name=container_name)
+                c.create_container(application_container, detach=True, tty=True, environment=env,
+                                   volumes=['/etc/rosauth/secret'], name=container_name)
                 
                 sysout("Starting user container " + container_name)
                 c.start(container_name,
-                        binds={'/tmp/easesecrets/' + container_name + '/secret':
+                        binds={secretsDir+'/' + container_name + '/secret':
                                    {'bind': '/etc/rosauth/secret', 'ro': True}},
                         port_bindings={9090: None},
                         links=links,
@@ -97,9 +100,11 @@ class DockerManager(object):
                                        detach=True, tty=True, stdin_open=True,
                                        environment=env,
                                        name=container_name,
+                                       volumes=['/tmp/easesecrets'],
                                        command='python runserver.py')
                     sysout("Running webapp container " + container_name)
                     c.start(container_name,
+                          binds={secretsDir: {'bind': '/tmp/easesecrets'}},
                           port_bindings={5000: None},
                           links=links,
                           volumes_from=volumes)

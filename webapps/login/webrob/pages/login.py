@@ -27,7 +27,6 @@ def track_login(sender, user, **extra):
     #session['common_data_container_name'] = "knowrob_data"
     #knowrob_docker.start_container(session['user_container_name'], session['user_data_container_name'],
     #                               session['common_data_container_name'],session['user_home_dir'])
-    #session['container_ip'] = knowrob_docker.get_container_ip(session['user_container_name'])
     #sender.logger.info('user logged in')
 
 @user_logged_out.connect_via(app)
