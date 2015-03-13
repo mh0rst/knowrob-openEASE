@@ -1,0 +1,82 @@
+#!/bin/bash
+bool=true
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+
+declare -A BUILDOPTS=()
+BUILDOPTS["all"]=false
+BUILDOPTS["knowrob"]=false
+BUILDOPTS["dockerbridge"]=false
+BUILDOPTS["webapps"]=false
+
+
+BUILDOPTS["nocache"]=false
+BUILDOPTS["clean"]=false
+BUILDOPTS["help"]=false
+
+for var in "$@"
+do
+    BUILDOPTS[$var]=true
+done
+
+if ${BUILDOPTS["help"]}; then
+	echo "Knowrob docker buildtool - Usage:"
+	echo "   ./build [OPTION [OPTION [OPTION...]]]"
+	echo ""
+	echo "Valid options are:"
+	echo "  == Modules to build =="
+	echo "  default - Builds dockerbridge and webapps (default if no module build parameters are given)"
+	echo "  all - Builds all modules"
+	echo "  knowrob - Builds knowrob and its base images"
+	echo "  dockerbridge - Builds dockerbridge"
+	echo "  webapps - Builds webapps"
+	echo ""
+	echo "  == Options for build =="
+	echo "  nocache - Runs docker build with --no-cache option"
+	echo "  clean - Runs cleanup script after build"
+	echo "  == Misc options =="
+	echo "  help - Prints this message and exits"
+	exit
+fi
+
+if ! ${BUILDOPTS["knowrob"]} && ! ${BUILDOPTS["dockerbridge"]} && ! ${BUILDOPTS["webapps"]} && ! ${BUILDOPTS["all"]} && ! ${BUILDOPTS["default"]}; then
+		BUILDOPTS["default"]=true
+fi
+
+function build() {
+	echo "Building $2 from $DIR/../$1"
+	if ${BUILDOPTS["nocache"]}; then
+		_NOCACHE="--no-cache"
+	else
+		_NOCACHE=""
+	fi
+	cd $DIR/../$1 && docker build $_NOCACHE -t $2 .
+}
+
+echo "Starting caching containers..."
+$DIR/start-apt-cacher
+$DIR/start-nexus
+
+if ${BUILDOPTS["knowrob"]} || ${BUILDOPTS["all"]}; then
+	build hydro-swi knowrob/hydro-swi
+	build hydro-knowrob/hydro-knowrob-base knowrob/hydro-knowrob-base
+	build hydro-knowrob/hydro-knowrob-daemon knowrob/hydro-knowrob-daemon
+fi
+
+if ${BUILDOPTS["dockerbridge"]} || ${BUILDOPTS["default"]} || ${BUILDOPTS["all"]}; then
+	build dockerbridge knowrob/dockerbridge
+fi
+
+if ${BUILDOPTS["webapps"]} || ${BUILDOPTS["default"]} || ${BUILDOPTS["all"]}; then
+	build webapps/easeapp openease/easeapp
+	build webapps/login openease/login
+	build webapps/knowrob openease/knowrob
+fi
+
+echo "Stopping caching containers..."
+docker stop -t 3 apt-cacher-run nexus-run
+
+if ${BUILDOPTS["clean"]}; then
+	echo "Cleaning docker images..."
+	$DIR/dockerclean
+fi

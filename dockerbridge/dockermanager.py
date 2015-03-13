@@ -70,7 +70,7 @@ class DockerManager(object):
                 
                 sysout("Starting user container " + container_name)
                 c.start(container_name,
-                        binds={'/tmp/easesecrets/' + user_container_name + '/secret':
+                        binds={'/tmp/easesecrets/' + container_name + '/secret':
                                    {'bind': '/etc/rosauth/secret', 'ro': True}},
                         port_bindings={9090: None},
                         links=links,
