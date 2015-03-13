@@ -18,14 +18,22 @@ from utils import sysout
 
 class DockerBridge(pyjsonrpc.HttpRequestHandler):
     @pyjsonrpc.rpcmethod
-    def start_container(self, user_container_name, user_data_container_name, common_data_container_name):
-        dockermanager.start_container(user_container_name, user_data_container_name, common_data_container_name)
-        timeout.setTimeout(user_container_name, 600)
+    def start_user_container(self, container_name, application_container, links, volumes):
+        dockermanager.start_user_container(container_name, application_container, links, volumes)
+        timeout.setTimeout(container_name, 600)
+    
+    @pyjsonrpc.rpcmethod
+    def start_webapp_container(self, container_name, webapp_container, links, volumes):
+        dockermanager.start_webapp_container(container_name, webapp_container, links, volumes)
 
     @pyjsonrpc.rpcmethod
     def stop_container(self, user_container_name):
         dockermanager.stop_container(user_container_name)
         timeout.remove(user_container_name)
+        
+    @pyjsonrpc.rpcmethod
+    def container_exists(self, user_container_name):
+        return dockermanager.container_exists(user_container_name)
 
     @pyjsonrpc.rpcmethod
     def get_container_ip(self, user_container_name):

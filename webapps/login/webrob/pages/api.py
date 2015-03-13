@@ -1,5 +1,6 @@
 from flask import jsonify, request, session
 from flask_login import current_user
+from flask_user import login_required
 import time
 from urlparse import urlparse
 from webrob.app_and_db import app, db
@@ -85,6 +86,12 @@ def refresh_by_token(token):
         return jsonify({'error': 'wrong api token'})
     knowrob_docker.refresh(user.username)
     return jsonify({'result': 'success'})
+
+@app.route('/create_api_token', methods=['GET'])
+@login_required
+def create_api_token():
+    create_token()
+    return redirect('/')
 
 
 def create_token():
