@@ -40,6 +40,11 @@ then
   mkdir -p $KNOWROB_SECRETS_DIR
 fi
 
+if [ ! -w "$KNOWROB_SECRETS_DIR" ]; then
+  echo "Secrets dir $KNOWROB_SECRETS_DIR not writable, running sudo chown on it..."
+  sudo chown -R  `id -un`:`id -gn` $KNOWROB_SECRETS_DIR
+fi
+
 stopContainer "knowrob"
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
