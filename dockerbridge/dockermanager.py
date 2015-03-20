@@ -75,7 +75,7 @@ class DockerManager(object):
                 c.start(container_name,
                         binds={secretsDir+'/' + container_name + '/secret':
                                    {'bind': '/etc/rosauth/secret', 'ro': True}},
-                        port_bindings={9090: None},
+                        port_bindings={9090: ('127.0.0.1',)},
                         links=links,
                         volumes_from=volumes)
         except (APIError, DockerException), e:
@@ -105,7 +105,7 @@ class DockerManager(object):
                     sysout("Running webapp container " + container_name)
                     c.start(container_name,
                           binds={secretsDir: {'bind': '/tmp/easesecrets'}},
-                          port_bindings={5000: None},
+                          port_bindings={5000: ('127.0.0.1',)},
                           links=links,
                           volumes_from=volumes)
         except (APIError, DockerException), e:
