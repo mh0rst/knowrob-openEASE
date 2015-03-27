@@ -1,26 +1,16 @@
 #!/bin/bash
-bool=true
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-
 declare -A BUILDOPTS=()
-BUILDOPTS["all"]=false
-BUILDOPTS["knowrob"]=false
-BUILDOPTS["dockerbridge"]=false
-BUILDOPTS["webapps"]=false
-
-
-BUILDOPTS["nocache"]=false
-BUILDOPTS["clean"]=false
-BUILDOPTS["stopcache"]=false
-BUILDOPTS["help"]=false
+hasargs=false
 
 for var in "$@"
 do
     BUILDOPTS[$var]=true
+    hasargs=true
 done
 
-if ${BUILDOPTS["help"]}; then
+if [ "${BUILDOPTS["help"]}" == true ]; then
 	echo "Knowrob docker buildtool - Usage:"
 	echo "   ./build [OPTION [OPTION [OPTION...]]]"
 	echo ""
@@ -41,13 +31,13 @@ if ${BUILDOPTS["help"]}; then
 	exit
 fi
 
-if ! ${BUILDOPTS["knowrob"]} && ! ${BUILDOPTS["dockerbridge"]} && ! ${BUILDOPTS["webapps"]} && ! ${BUILDOPTS["all"]} && ! ${BUILDOPTS["default"]}; then
-		BUILDOPTS["default"]=true
+if ! $hasargs; then
+	BUILDOPTS["default"]=true
 fi
 
 function build() {
 	echo "Building $2 from $DIR/../$1"
-	if ${BUILDOPTS["nocache"]}; then
+	if [ "${BUILDOPTS["nocache"]}" == true ]; then
 		_NOCACHE="--no-cache"
 	else
 		_NOCACHE=""
@@ -55,32 +45,32 @@ function build() {
 	cd $DIR/../$1 && docker build $_NOCACHE -t $2 .
 }
 
-echo "Starting caching containers..."
-$DIR/start-apt-cacher
-$DIR/start-nexus
-
-if ${BUILDOPTS["knowrob"]} || ${BUILDOPTS["all"]}; then
+if [ "${BUILDOPTS["knowrob"]}" == true ] || [ "${BUILDOPTS["all"]}" == true ] ; then
+	echo "Starting caching containers..."
+	$DIR/start-apt-cacher
+	$DIR/start-nexus
+	echo "Building knowrob"
 	build hydro-swi knowrob/hydro-swi
 	build hydro-knowrob/hydro-knowrob-base knowrob/hydro-knowrob-base
 	build hydro-knowrob/hydro-knowrob-daemon knowrob/hydro-knowrob-daemon
 fi
 
-if ${BUILDOPTS["dockerbridge"]} || ${BUILDOPTS["default"]} || ${BUILDOPTS["all"]}; then
+if [ "${BUILDOPTS["dockerbridge"]}" == true ] || [ "${BUILDOPTS["default"]}" == true ] || [ "${BUILDOPTS["all"]}" == true ]; then
 	build dockerbridge knowrob/dockerbridge
 fi
 
-if ${BUILDOPTS["webapps"]} || ${BUILDOPTS["default"]} || ${BUILDOPTS["all"]}; then
+if [ "${BUILDOPTS["webapps"]}" == true ] || [ "${BUILDOPTS["default"]}" == true ] || [ "${BUILDOPTS["all"]}" == true ]; then
 	build webapps/easeapp openease/easeapp
 	build webapps/login openease/login
 	build webapps/knowrob openease/knowrob
 fi
 
-if ${BUILDOPTS["stopcache"]}; then
+if [ "${BUILDOPTS["stopcache"]}" == true ]; then
 	echo "Stopping caching containers..."
 	docker stop -t 3 apt-cacher-run nexus-run
 fi
 
-if ${BUILDOPTS["clean"]}; then
+if [ "${BUILDOPTS["clean"]}" == true ]; then
 	echo "Cleaning docker images..."
 	$DIR/dockerclean
 fi
