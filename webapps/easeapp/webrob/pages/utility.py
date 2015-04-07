@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: iso-8859-15 -*-
-# @author Daniel Beßler
+# @author Daniel Beï¿½ler
 
 import os
 import string
@@ -12,6 +12,12 @@ from Crypto.Random import random
 def get_application_description(application_name):
     try:
         return app.config['APPLICATIONS'][application_name]
+    except:
+        return None
+
+def get_applications():
+    try:
+        return app.config['APPLICATIONS'].keys()
     except:
         return None
 

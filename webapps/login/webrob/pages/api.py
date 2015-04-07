@@ -4,8 +4,8 @@ from flask_user import login_required
 import time
 from urlparse import urlparse
 from webrob.app_and_db import app, db
-from webrob.docker import knowrob_docker
-from webrob.docker.knowrob_docker import generate_mac
+from webrob.docker import docker_interface
+from webrob.docker.docker_interface import generate_mac
 from webrob.models.users import User
 from webrob.pages.utility import random_string, get_application_description
 
@@ -19,7 +19,7 @@ def login_by_session():
     request
     """
     if current_user.is_authenticated():
-        ip = knowrob_docker.get_container_ip(session['user_container_name'])
+        ip = docker_interface.get_container_ip(session['user_container_name'])
         return generate_rosauth(session['user_container_name'], ip)
     return jsonify({'error': 'not authenticated'})
 
@@ -31,7 +31,7 @@ def refresh_by_session():
     automatically.
     """
     if current_user.is_authenticated():
-        knowrob_docker.refresh(current_user.username)
+        docker_interface.refresh(current_user.username)
         return jsonify({'result': 'success'})
     return jsonify({'error': 'not authenticated'})
 
@@ -45,8 +45,8 @@ def login_by_token(token):
     user = user_by_token(token)
     if user is None:
         return jsonify({'error': 'wrong api token'})
-    ip = knowrob_docker.get_container_ip(user.username)
-    return generate_rosauth(user.username, ip)
+    ip = docker_interface.get_container_ip(user.username)
+    return generate_rosauth(ip)
 
 
 @app.route('/api/v1.0/start_container/<string:token>', methods=['GET'])
@@ -61,7 +61,7 @@ def start_container(token):
     application_description = get_application_description('knowrob')
     if application_description is None: return
 
-    knowrob_docker.start_user_container(
+    docker_interface.start_user_container(
         user.username, '/home/ros/user_data/' + user.username,
         application_description['application'],
         application_description['application_links'],
@@ -79,7 +79,7 @@ def stop_container(token):
     user = user_by_token(token)
     if user is None:
         return jsonify({'error': 'wrong api token'})
-    knowrob_docker.stop_container(user.username)
+    docker_interface.stop_container(user.username)
     return jsonify({'result': 'success'})
 
 
@@ -92,7 +92,7 @@ def refresh_by_token(token):
     user = user_by_token(token)
     if user is None:
         return jsonify({'error': 'wrong api token'})
-    knowrob_docker.refresh(user.username)
+    docker_interface.refresh(user.username)
     return jsonify({'result': 'success'})
 
 @app.route('/create_api_token', methods=['GET'])
