@@ -81,6 +81,7 @@ runContainer "postgres_db" "-d -e POSTGRES_USER=docker --volumes-from user_db kn
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Check if dockerbridge is running or stopped and start otherwise
+# TODO migration from user_data strategy! Remove after Sep. 2015
 runContainer "dockerbridge" "-d -v /var/run/docker.sock:/var/run/docker.sock knowrob/dockerbridge" true
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

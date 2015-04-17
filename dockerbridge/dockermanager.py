@@ -73,6 +73,7 @@ class DockerManager(object):
                 sysout("Starting user container " + container_name)
                 # TODO add user data container to volumes
                 # TODO make knowrob_data read only
+                # TODO migrate from user_data (tar userfiles, untar them in own container, delete from user_data)
                 c.start(container_name,
                         port_bindings={9090: ('127.0.0.1',)},
                         links=links,
