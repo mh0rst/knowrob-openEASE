@@ -81,14 +81,14 @@ class FileManager(object):
         self.__pump(source, instream)
         self.__stop_and_remove(cont)
 
-    def listfiles(self, container, folder):
+    def listfiles(self, container, dir):
         """
-        Returns all files found in given folder (including subfolders) inside the container
+        Returns all files found in given directory (including subdirectories) inside the container
         :param container: Name of the data container
-        :param folder: Path to list the files from
+        :param dir: Path to list the files from
         :return: a string list of files
         """
-        find = self.__find(container, folder)
+        find = self.__find(container, dir)
         if len(find) > 0:
             del find[0]
         return find

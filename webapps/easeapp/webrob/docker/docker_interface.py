@@ -22,19 +22,16 @@ def docker_connect():
 
 
 def generate_secret(user_container_name):
-    path = '/tmp/easesecrets/' + user_container_name
-    if not os.path.exists(path):
-        os.makedirs(path)
-    write_text_file(path + '/secret', random_string(16))
+    random_string(16)
+    #TODO Write to user data container using dockerbridge
 
 
 def generate_mac(user_container_name, client, dest, rand, t, level, end):
     """
     Generate the mac for use with rosauth. Choose params according to rosauth specification.
     """
-    f = open('/tmp/easesecrets/' + user_container_name + '/secret', 'r')
-    secret = f.readline()
-    f.close()
+    #TODO Read from user data container using dockerbridge, cache secret in session
+    secret = ''
     return hashlib.sha512(secret + client + dest + rand + str(t) + level + str(end)).hexdigest()
 
 
@@ -46,8 +43,9 @@ def start_user_container(container_name, user_home_dir, application_container, l
             generate_secret(container_name)
             c.notify("start_user_container", container_name, application_container, links, volumes)
             # create home directory if it does not exist yet
-            if not os.path.exists(user_home_dir):
-                os.makedirs(user_home_dir)
+            # if not os.path.exists(user_home_dir):
+            #    os.makedirs(user_home_dir)
+            # TODO do this in user data container
 
     except InternalError, e:
         flash("Error: Connection to your OpenEASE instance failed.")

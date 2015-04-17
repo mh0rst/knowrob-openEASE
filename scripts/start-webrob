@@ -34,17 +34,6 @@ then
    export KNOWROB_WEB_PORT=5000
 fi
 
-if [ "$KNOWROB_SECRETS_DIR" == "" ] || [ -d "$KNOWROB_SECRETS_DIR" ]
-then
-  export KNOWROB_SECRETS_DIR=/tmp/easesecrets
-  mkdir -p $KNOWROB_SECRETS_DIR
-fi
-
-if [ ! -w "$KNOWROB_SECRETS_DIR" ]; then
-  echo "Secrets dir $KNOWROB_SECRETS_DIR not writable, running sudo chown on it..."
-  sudo chown -R  `id -un`:`id -gn` $KNOWROB_SECRETS_DIR
-fi
-
 stopContainer "knowrob"
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -88,13 +77,14 @@ runContainer "postgres_db" "-d -e POSTGRES_USER=docker --volumes-from user_db kn
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Check if dockerbridge is running or stopped and start otherwise
-runContainer "dockerbridge" "-d -v /var/run/docker.sock:/var/run/docker.sock -e KNOWROB_SECRETS_DIR=$KNOWROB_SECRETS_DIR knowrob/dockerbridge" true
+runContainer "dockerbridge" "-d -v /var/run/docker.sock:/var/run/docker.sock knowrob/dockerbridge" true
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # start a knowrob container for the tutorials
+# TODO replace with docker commands to write secret to data_tutorials
 #mkdir -p $KNOWROB_SECRETS_DIR/tutorials
 #< /dev/urandom tr -dc _A-Z-a-z-0-9 | head --bytes=16 > $KNOWROB_SECRETS_DIR/tutorials/secret
-#runContainer "tutorials" "-d -e VIRTUAL_HOST=tutorials -e VIRTUAL_PORT=9090 --volumes-from knowrob_data -v $KNOWROB_SECRETS_DIR/tutorials/secret:/etc/rosauth/secret --link mongo_db:mongo knowrob/hydro-knowrob-daemon" true
+#runContainer "tutorials" "-d -e VIRTUAL_HOST=tutorials -e VIRTUAL_PORT=9090 --volumes-from knowrob_data --link mongo_db:mongo knowrob/hydro-knowrob-daemon" true
 
 # Wait for the postgres port to be available
 echo "Waiting for postgres container..."
@@ -117,9 +107,7 @@ fi
 
 echo "Creating login web app container..."
 docker run --rm -i -p 127.0.0.1:$KNOWROB_WEB_PORT:5000 \
-    --volumes-from user_data \
     --volumes-from mesh_data \
-    -v $KNOWROB_SECRETS_DIR:/tmp/easesecrets \
     --link postgres_db:postgres \
     --link dockerbridge:dockerbridge \
     -e VIRTUAL_HOST=login \

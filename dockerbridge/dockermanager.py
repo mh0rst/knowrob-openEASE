@@ -68,13 +68,12 @@ class DockerManager(object):
                             "/opt/ros/hydro/stacks",
                             "/home/ros/user_data/" + container_name
                 ])}
-                c.create_container(application_container, detach=True, tty=True, environment=env,
-                                   volumes=['/etc/rosauth/secret'], name=container_name)
+                c.create_container(application_container, detach=True, tty=True, environment=env, name=container_name)
                 
                 sysout("Starting user container " + container_name)
+                # TODO add user data container to volumes
+                # TODO make knowrob_data read only
                 c.start(container_name,
-                        binds={secretsDir+'/' + container_name + '/secret':
-                                   {'bind': '/etc/rosauth/secret', 'ro': True}},
                         port_bindings={9090: ('127.0.0.1',)},
                         links=links,
                         volumes_from=volumes)
@@ -100,14 +99,12 @@ class DockerManager(object):
                                        detach=True, tty=True, stdin_open=True,
                                        environment=env,
                                        name=container_name,
-                                       volumes=['/tmp/easesecrets'],
                                        command='python runserver.py')
                     sysout("Running webapp container " + container_name)
                     c.start(container_name,
-                          binds={secretsDir: {'bind': '/tmp/easesecrets'}},
-                          port_bindings={5000: ('127.0.0.1',)},
-                          links=links,
-                          volumes_from=volumes)
+                            port_bindings={5000: ('127.0.0.1',)},
+                            links=links,
+                            volumes_from=volumes)
         except (APIError, DockerException), e:
             sysout("Error:" + str(e.message) + "\n")
             traceback.print_exc()
