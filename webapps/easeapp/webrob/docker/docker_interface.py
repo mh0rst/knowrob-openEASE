@@ -35,7 +35,7 @@ def generate_mac(user_container_name, client, dest, rand, t, level, end):
     return hashlib.sha512(secret + client + dest + rand + str(t) + level + str(end)).hexdigest()
 
 
-def start_user_container(container_name, user_home_dir, application_container, links, volumes):
+def start_user_container(container_name, application_container, links, volumes):
     try:
         c = docker_connect()
 

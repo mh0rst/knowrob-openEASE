@@ -19,8 +19,7 @@ def start_application():
     if application_description is None: return
     
     docker_interface.start_user_container(
-        session['user_container_name'], 
-        session['user_home_dir'],
+        session['user_container_name'],
         application_description['application'],
         application_description['application_links'],
         application_description['application_volumes'])

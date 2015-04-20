@@ -12,12 +12,19 @@ import sys
 import pyjsonrpc
 
 from dockermanager import DockerManager
+from filemanager import FileManager
 from securitycheck import *
 from timeoutmanager import TimeoutManager
 from utils import sysout
 
 
 class DockerBridge(pyjsonrpc.HttpRequestHandler):
+
+    @pyjsonrpc.rpcmethod
+    def create_user_data_container(self, container_name):
+        check_containername(container_name, 'container_name')
+        dockermanager.create_user_data_container(container_name)
+
     @pyjsonrpc.rpcmethod
     def start_user_container(self, container_name, application_container, links, volumes):
         check_containername(container_name, 'container_name')
@@ -115,6 +122,7 @@ signal.signal(signal.SIGTERM, handler)
 signal.signal(signal.SIGINT, handler)
 
 dockermanager = DockerManager()
+filemanager = FileManager()
 
 sysout("Starting watchdog")
 timeout = TimeoutManager(5, dockermanager.stop_container)

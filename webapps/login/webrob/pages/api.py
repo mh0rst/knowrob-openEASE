@@ -62,7 +62,7 @@ def start_container(token):
     if application_description is None: return
 
     docker_interface.start_user_container(
-        user.username, '/home/ros/user_data/' + user.username,
+        user.username,
         application_description['application'],
         application_description['application_links'],
         application_description['application_volumes'])

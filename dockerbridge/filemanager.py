@@ -2,16 +2,20 @@
 Basic file handling functions for handling data in docker data containers.
 """
 import StringIO
+
+import docker
 from docker.errors import APIError
+
 import dockerio
+
 
 __author__ = 'mhorst@cs.uni-bremen.de'
 
 
 class FileManager(object):
 
-    def __init__(self, docker):
-        self.docker = docker
+    def __init__(self):
+        self.docker = docker.Client(base_url='unix://var/run/docker.sock', version='1.12', timeout=10)
 
     def fromcontainer(self, container, sourcefile, target):
         """
