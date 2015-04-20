@@ -41,6 +41,10 @@ stopContainer "knowrob"
 runContainer "knowrob_data" "knowrob/knowrob_data:latest true"
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Check if user_data container exists and create otherwise
+runContainer "user_data" "-v /home/ros/user_data knowrob/user_data true"
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Check if mesh_data container exists and create otherwise
 runContainer "mesh_data" "-v /home/ros/mesh_data ubuntu chmod -R ugo+rw /home/ros/mesh_data"
 

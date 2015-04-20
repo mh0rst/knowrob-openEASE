@@ -8,11 +8,12 @@
 """
 import signal
 import sys
+import StringIO
 
 import pyjsonrpc
 
 from dockermanager import DockerManager
-from filemanager import FileManager
+from filemanager import FileManager, absolute_userpath, data_container_name
 from securitycheck import *
 from timeoutmanager import TimeoutManager
 from utils import sysout
@@ -23,6 +24,7 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
     @pyjsonrpc.rpcmethod
     def create_user_data_container(self, container_name):
         check_containername(container_name, 'container_name')
+
         dockermanager.create_user_data_container(container_name)
 
     @pyjsonrpc.rpcmethod
@@ -30,6 +32,7 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         check_containername(container_name, 'container_name')
         check_containername(application_container, 'application_container')
         # TODO check links and volumes
+
         dockermanager.start_user_container(container_name, application_container, links, volumes)
         timeout.setTimeout(container_name, 600)
     
@@ -38,81 +41,117 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         check_containername(container_name, 'container_name')
         check_containername(webapp_container, 'webapp_container')
         # TODO check links and volumes
+
         dockermanager.start_webapp_container(container_name, webapp_container, links, volumes)
 
     @pyjsonrpc.rpcmethod
     def stop_container(self, user_container_name):
         check_containername(user_container_name, 'user_container_name')
+
         dockermanager.stop_container(user_container_name)
         timeout.remove(user_container_name)
-        
+
     @pyjsonrpc.rpcmethod
-    def container_exists(self, user_container_name):
+    def container_exists(self, user_container_name, base_container_name=None):
         check_containername(user_container_name, 'user_container_name')
-        return dockermanager.container_exists(user_container_name)
-        
-    @pyjsonrpc.rpcmethod
-    def container_exists(self, user_container_name, base_container_name):
-        check_containername(user_container_name, 'user_container_name')
-        check_containername(base_container_name, 'base_container_name')
+        if base_container_name is not None:
+            check_containername(base_container_name, 'base_container_name')
+
         return dockermanager.container_exists(user_container_name, base_container_name)
 
     @pyjsonrpc.rpcmethod
     def get_container_ip(self, user_container_name):
         check_containername(user_container_name, 'user_container_name')
+
         return dockermanager.get_container_ip(user_container_name)
 
     @pyjsonrpc.rpcmethod
     def refresh(self, user_container_name):
         check_containername(user_container_name, 'user_container_name')
+
         timeout.resetTimeout(user_container_name, 600)
 
     @pyjsonrpc.rpcmethod
     def get_container_log(self, user_container_name):
         check_containername(user_container_name, 'user_container_name')
+
         return dockermanager.get_container_log(user_container_name)
 
     @pyjsonrpc.rpcmethod
     def files_fromcontainer(self, user_container_name, sourcefile):
         check_containername(user_container_name, 'user_container_name')
         check_pathname(sourcefile, 'sourcefile')
-        container = 'data_'+user_container_name
+
+        container = data_container_name(user_container_name)
+        file = absolute_userpath(user_container_name, sourcefile)
+        data = StringIO.StringIO()
+        filemanager.fromcontainer(container. file, data)
+        return data
 
     @pyjsonrpc.rpcmethod
     def files_tocontainer(self, user_container_name, data, targetfile):
         check_containername(user_container_name, 'user_container_name')
         check_pathname(targetfile, 'targetfile')
-        container = 'data_'+user_container_name
+
+        container = data_container_name(user_container_name)
+        file = absolute_userpath(user_container_name, targetfile)
+        filemanager.tocontainer(container. data, file, 'ros')
+
+    @pyjsonrpc.rpcmethod
+    def files_exists(self, user_container_name, file):
+        check_containername(user_container_name, 'user_container_name')
+        check_pathname(file, 'file')
+
+        container = data_container_name(user_container_name)
+        checkexisting = absolute_userpath(user_container_name, file)
+        return filemanager.exists(container. data, checkexisting)
 
     @pyjsonrpc.rpcmethod
     def files_mkdir(self, user_container_name, dir):
         check_containername(user_container_name, 'user_container_name')
         check_pathname(dir, 'dir')
-        container = 'data_'+user_container_name
+
+        container = data_container_name(user_container_name)
+        file = absolute_userpath(user_container_name, dir)
+        filemanager.mkdir(container. file, True, 'ros')
 
     @pyjsonrpc.rpcmethod
     def files_rm(self, user_container_name, file):
         check_containername(user_container_name, 'user_container_name')
         check_pathname(file, 'file')
-        container = 'data_'+user_container_name
+
+        container = data_container_name(user_container_name)
+        filetorm = absolute_userpath(user_container_name, file)
+        filemanager.rm(container. filetorm, True)
 
     @pyjsonrpc.rpcmethod
     def files_tar(self, user_container_name, sourcefile):
         check_containername(user_container_name, 'user_container_name')
         check_pathname(sourcefile, 'sourcefile')
-        container = 'data_'+user_container_name
+
+        container = data_container_name(user_container_name)
+        file = absolute_userpath(user_container_name, sourcefile)
+        data = StringIO.StringIO()
+        filemanager.tar(container, file, data)
+        return data
 
     @pyjsonrpc.rpcmethod
     def files_untar(self, user_container_name, source, targetdir):
         check_containername(user_container_name, 'user_container_name')
         check_pathname(targetdir, 'targetdir')
-        container = 'data_'+user_container_name
+
+        container = data_container_name(user_container_name)
+        file = absolute_userpath(user_container_name, targetdir)
+        filemanager.untar(container, source, file, 'ros')
 
     @pyjsonrpc.rpcmethod
     def files_ls(self, user_container_name, dir):
         check_containername(user_container_name, 'user_container_name')
         check_pathname(dir, 'dir')
-        container = 'data_'+user_container_name
+
+        container = data_container_name(user_container_name)
+        file = absolute_userpath(user_container_name, dir)
+        return filemanager.listfiles(container, file)
 
 
 def handler(signum, frame):

@@ -82,7 +82,7 @@ class DockerManager(object):
             if self.__get_container(user_data_container, all_containers) is None:
                 sysout("Creating "+user_data_container+" container.")
                 self.__client.create_container('knowrob/user_data', detach=True, tty=True, name=user_data_container,
-                                           volumes=[user_home_dir], entrypoint='true')
+                                                volumes=[user_home_dir], entrypoint='true')
                 self.__client.start(user_data_container)
         except (APIError, DockerException), e:
             sysout("Error:" + str(e.message) + "\n")
@@ -148,18 +148,11 @@ class DockerManager(object):
             sysout("Error:" + str(e.message) + "\n")
             return 'error'
 
-    def container_exists(self, container_name):
-        try:
-            return self.__get_container(container_name, self.__client.containers(all=True)) is not None
-        except (APIError, DockerException), e:
-            sysout("Error:" + str(e.message) + "\n")
-            return False
-
-    def container_exists(self, container_name, base_container_name):
+    def container_exists(self, container_name, base_container_name=None):
         try:
             cont = self.__get_container(container_name, self.__client.containers(all=True))
-            if cont is None:
-                return False
+            if base_container_name is None or cont is None:
+                return cont is not None
             
             inspect = self.__client.inspect_container(container_name)
             image = inspect['Config']['Image']

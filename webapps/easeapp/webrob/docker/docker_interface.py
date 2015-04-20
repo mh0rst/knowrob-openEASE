@@ -42,10 +42,6 @@ def start_user_container(container_name, application_container, links, volumes):
         if c is not None:
             generate_secret(container_name)
             c.notify("start_user_container", container_name, application_container, links, volumes)
-            # create home directory if it does not exist yet
-            # if not os.path.exists(user_home_dir):
-            #    os.makedirs(user_home_dir)
-            # TODO do this in user data container
 
     except InternalError, e:
         flash("Error: Connection to your OpenEASE instance failed.")

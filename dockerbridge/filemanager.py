@@ -12,6 +12,14 @@ import dockerio
 __author__ = 'mhorst@cs.uni-bremen.de'
 
 
+def data_container_name(user_container_name):
+    return 'data_'+user_container_name
+
+
+def absolute_userpath(user_container_name, relative):
+    return '/home/ros/'+user_container_name+"/"+relative
+
+
 class FileManager(object):
 
     def __init__(self):
@@ -35,6 +43,17 @@ class FileManager(object):
         :param user: uid or username of the desired owner
         """
         self.__writefile(container, source, targetfile, user)
+
+    def exists(self, container, file):
+        """
+        Returns true if file exists inside the container
+        :param container: container to check for file existence in
+        :param file: the file to check
+        """
+        ls = self.__ls(container, dir)
+        if len(ls) > 0:
+            return 'No such file or directory' not in ls[0]
+        return False
 
     def mkdir(self, container, dir, parents=False, user=0):
         """
@@ -96,6 +115,15 @@ class FileManager(object):
         if len(find) > 0:
             del find[0]
         return find
+
+    def __ls(self, data_container, file):
+        cont = self.__create_temp_container('ls '+file)
+        outstream = self.__attach(cont, 'stdout')
+        self.__start_container(cont, data_container)
+        result = StringIO.StringIO()
+        self.__pump(outstream, result)
+        self.__stop_and_remove(cont)
+        return result.getvalue().splitlines()
 
     def __find(self, data_container, dir):
         cont = self.__create_temp_container('cd '+dir+' && find .')
