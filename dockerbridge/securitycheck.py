@@ -20,12 +20,21 @@ class SecurityException(Exception):
 #disallow all characters that are not alphanumeric, underscore or dash
 illegal_containername = re.compile('[^a-zA-Z0-9_\\-]+')
 
+#disallow all characters that are uncommon in image names
+illegal_imagename = re.compile('[^a-zA-Z0-9_\\-\\.:/]+')
+
 #disallow absolute paths, parent folders, &&, ||, semicolon and spaces without preceding backslash
 illegal_pathname = re.compile('(?:^/|\\.\\./|/\\.\\.|&&|\|\||;|[^\\\\] )+')
 
 
 def check_containername(input, paramname):
     result = illegal_containername.search(input)
+    if result:
+        raise SecurityException(paramname, result.group())
+
+
+def check_imagename(input, paramname):
+    result = illegal_imagename.search(input)
     if result:
         raise SecurityException(paramname, result.group())
 

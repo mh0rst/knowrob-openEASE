@@ -6,6 +6,7 @@
     Always sanitize method parameters in methods with @pyjsonrpc.rpcmethod annotation where necessary, as they contain
     user input.
 """
+import base64
 import signal
 import sys
 import StringIO
@@ -13,18 +14,20 @@ import StringIO
 import pyjsonrpc
 
 from dockermanager import DockerManager
-from filemanager import FileManager, absolute_userpath, data_container_name
+from filemanager import FileManager, absolute_userpath, data_container_name, host_transferpath
 from securitycheck import *
 from timeoutmanager import TimeoutManager
 from utils import sysout
 
+
+def to_deb64_stream(data):
+    return StringIO.StringIO(base64.b64decode(data))
 
 class DockerBridge(pyjsonrpc.HttpRequestHandler):
 
     @pyjsonrpc.rpcmethod
     def create_user_data_container(self, container_name):
         check_containername(container_name, 'container_name')
-
         dockermanager.create_user_data_container(container_name)
 
     @pyjsonrpc.rpcmethod
@@ -55,7 +58,7 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
     def container_exists(self, user_container_name, base_container_name=None):
         check_containername(user_container_name, 'user_container_name')
         if base_container_name is not None:
-            check_containername(base_container_name, 'base_container_name')
+            check_imagename(base_container_name, 'base_container_name')
 
         return dockermanager.container_exists(user_container_name, base_container_name)
 
@@ -83,10 +86,10 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         check_pathname(sourcefile, 'sourcefile')
 
         container = data_container_name(user_container_name)
-        file = absolute_userpath(user_container_name, sourcefile)
+        file = absolute_userpath(sourcefile)
         data = StringIO.StringIO()
-        filemanager.fromcontainer(container. file, data)
-        return data
+        filemanager.fromcontainer(container, file, data)
+        return base64.b64encode(data.getvalue())
 
     @pyjsonrpc.rpcmethod
     def files_tocontainer(self, user_container_name, data, targetfile):
@@ -94,8 +97,49 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         check_pathname(targetfile, 'targetfile')
 
         container = data_container_name(user_container_name)
-        file = absolute_userpath(user_container_name, targetfile)
-        filemanager.tocontainer(container. data, file, 'ros')
+        file = absolute_userpath(targetfile)
+        filemanager.tocontainer(container, to_deb64_stream(data), file, 1000)
+
+    @pyjsonrpc.rpcmethod
+    def files_largefromcontainer(self, user_container_name, sourcefile, targetfile):
+        check_pathname(sourcefile, 'sourcefile')
+        check_pathname(targetfile, 'targetfile')
+
+        file = absolute_userpath(sourcefile)
+        target = host_transferpath(targetfile)
+        self.__largecopy(user_container_name, file, target)
+
+    @pyjsonrpc.rpcmethod
+    def files_largetocontainer(self, user_container_name, sourcefile, targetfile):
+        check_pathname(sourcefile, 'sourcefile')
+        check_pathname(targetfile, 'targetfile')
+
+        file = host_transferpath(sourcefile)
+        target = absolute_userpath(targetfile)
+        self.__largecopy(user_container_name, file, target)
+
+    def __largecopy(self, user_container_name, src, tgt):
+        check_containername(user_container_name, 'user_container_name')
+
+        container = data_container_name(user_container_name)
+        filemanager.copy_with_hostmount(container, src, tgt, 1000)
+
+    @pyjsonrpc.rpcmethod
+    def files_readsecret(self, user_container_name):
+        check_containername(user_container_name, 'user_container_name')
+
+        container = data_container_name(user_container_name)
+        data = StringIO.StringIO()
+        filemanager.fromcontainer(container, '/etc/rosauth/secret', data)
+        return data.getvalue()
+
+    @pyjsonrpc.rpcmethod
+    def files_writesecret(self, user_container_name, secret):
+        check_containername(user_container_name, 'user_container_name')
+
+        container = data_container_name(user_container_name)
+        data = StringIO.StringIO(secret)
+        filemanager.tocontainer(container, data, '/etc/rosauth/secret')
 
     @pyjsonrpc.rpcmethod
     def files_exists(self, user_container_name, file):
@@ -103,8 +147,8 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         check_pathname(file, 'file')
 
         container = data_container_name(user_container_name)
-        checkexisting = absolute_userpath(user_container_name, file)
-        return filemanager.exists(container. data, checkexisting)
+        checkexisting = absolute_userpath(file)
+        return filemanager.exists(container, checkexisting)
 
     @pyjsonrpc.rpcmethod
     def files_mkdir(self, user_container_name, dir):
@@ -112,8 +156,8 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         check_pathname(dir, 'dir')
 
         container = data_container_name(user_container_name)
-        file = absolute_userpath(user_container_name, dir)
-        filemanager.mkdir(container. file, True, 'ros')
+        file = absolute_userpath(dir)
+        filemanager.mkdir(container, file, True, 1000)
 
     @pyjsonrpc.rpcmethod
     def files_rm(self, user_container_name, file):
@@ -121,8 +165,8 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         check_pathname(file, 'file')
 
         container = data_container_name(user_container_name)
-        filetorm = absolute_userpath(user_container_name, file)
-        filemanager.rm(container. filetorm, True)
+        filetorm = absolute_userpath(file)
+        filemanager.rm(container, filetorm, True)
 
     @pyjsonrpc.rpcmethod
     def files_tar(self, user_container_name, sourcefile):
@@ -130,10 +174,10 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         check_pathname(sourcefile, 'sourcefile')
 
         container = data_container_name(user_container_name)
-        file = absolute_userpath(user_container_name, sourcefile)
+        file = absolute_userpath(sourcefile)
         data = StringIO.StringIO()
         filemanager.tar(container, file, data)
-        return data
+        return base64.b64encode(data.getvalue())
 
     @pyjsonrpc.rpcmethod
     def files_untar(self, user_container_name, source, targetdir):
@@ -141,8 +185,8 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         check_pathname(targetdir, 'targetdir')
 
         container = data_container_name(user_container_name)
-        file = absolute_userpath(user_container_name, targetdir)
-        filemanager.untar(container, source, file, 'ros')
+        file = absolute_userpath(targetdir)
+        filemanager.untar(container, to_deb64_stream(source), file, 1000)
 
     @pyjsonrpc.rpcmethod
     def files_ls(self, user_container_name, dir):
@@ -150,7 +194,7 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         check_pathname(dir, 'dir')
 
         container = data_container_name(user_container_name)
-        file = absolute_userpath(user_container_name, dir)
+        file = absolute_userpath(dir)
         return filemanager.listfiles(container, file)
 
 

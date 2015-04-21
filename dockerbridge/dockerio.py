@@ -16,29 +16,9 @@
 # limitations under the License.
 
 import os
-import fcntl
 import errno
 import struct
 import six
-
-
-def set_blocking(fd, blocking=True):
-    """
-    Set the given file-descriptor blocking or non-blocking.
-
-    Returns the original blocking status.
-    """
-
-    old_flag = fcntl.fcntl(fd, fcntl.F_GETFL)
-
-    if blocking:
-        new_flag = old_flag & ~ os.O_NONBLOCK
-    else:
-        new_flag = old_flag | os.O_NONBLOCK
-
-    fcntl.fcntl(fd, fcntl.F_SETFL, new_flag)
-
-    return not bool(old_flag & os.O_NONBLOCK)
 
 
 class Stream(object):
@@ -72,13 +52,6 @@ class Stream(object):
         """
 
         return self.fd.fileno()
-
-    def set_blocking(self, value):
-        if hasattr(self.fd, 'setblocking'):
-            self.fd.setblocking(value)
-            return True
-        else:
-            return set_blocking(self.fd, value)
 
     def read(self, n=4096):
         """
@@ -148,9 +121,6 @@ class Demuxer(object):
         """
 
         return self.stream.fileno()
-
-    def set_blocking(self, value):
-        return self.stream.set_blocking(value)
 
     def read(self, n=4096):
         """
@@ -244,9 +214,6 @@ class Pump(object):
 
         return self.from_stream.fileno()
 
-    def set_blocking(self, value):
-        return self.from_stream.set_blocking(value)
-
     def flush(self, n=4096):
         """
         Flush `n` bytes of data from the reader Stream to the writer Stream.
@@ -258,7 +225,13 @@ class Pump(object):
         """
 
         try:
-            return self.to_stream.write(self.from_stream.read(n))
+            read = self.from_stream.read(n)
+            if read is None:
+                return read
+            write = self.to_stream.write(read)
+            if write is None:
+                return len(read)
+            return write
         except OSError as e:
             if e.errno != errno.EPIPE:
                 raise e

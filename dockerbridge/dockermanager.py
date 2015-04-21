@@ -6,6 +6,7 @@ import traceback
 
 import docker
 from docker.errors import *
+from filemanager import data_container_name, absolute_userpath, lft_dir
 
 from utils import sysout
 
@@ -13,7 +14,7 @@ from utils import sysout
 class DockerManager(object):
 
     def __init__(self):
-        self.__client = docker.Client(base_url='unix://var/run/docker.sock', version='1.12', timeout=10)
+        self.__client = docker.Client(base_url='unix://var/run/docker.sock', version='1.18', timeout=10)
 
     def start_common_container(self):
         try:
@@ -46,10 +47,9 @@ class DockerManager(object):
             # Stop user container if running
             self.__stop_container__(container_name, all_containers)
 
-            user_home_dir = '/home/ros/user_data/' + container_name
-            user_data_container = 'data_'+container_name
+            user_home_dir = absolute_userpath('')
+            user_data_container = data_container_name(container_name)
             volumes += user_data_container
-            sysout(str(volumes)) #TODO remove on finished testing
 
             sysout("Creating user container " + container_name)
             env = {"VIRTUAL_HOST": container_name,
@@ -64,8 +64,6 @@ class DockerManager(object):
                                            name=container_name)
 
             sysout("Starting user container " + container_name)
-            # TODO add user data container to volumes
-            # TODO make knowrob_data read only
             self.__client.start(container_name,
                                 port_bindings={9090: ('127.0.0.1',)},
                                 links=links,
@@ -77,16 +75,17 @@ class DockerManager(object):
     def create_user_data_container(self, container_name):
         try:
             all_containers = self.__client.containers(all=True)
-            user_home_dir = '/home/ros/user_data/' + container_name
-            user_data_container = 'data_'+container_name
+            user_data_container = data_container_name(container_name)
             if self.__get_container(user_data_container, all_containers) is None:
                 sysout("Creating "+user_data_container+" container.")
                 self.__client.create_container('knowrob/user_data', detach=True, tty=True, name=user_data_container,
-                                                volumes=[user_home_dir], entrypoint='true')
+                                               volumes=['/etc/rosauth'], entrypoint='true')
                 self.__client.start(user_data_container)
+                return True
         except (APIError, DockerException), e:
             sysout("Error:" + str(e.message) + "\n")
             traceback.print_exc()
+        return False
 
     def start_webapp_container(self, container_name, webapp_container, links, volumes):
         try:
@@ -100,15 +99,17 @@ class DockerManager(object):
                        "VIRTUAL_PORT": '5000',
                        "OPEN_EASE_WEBAPP": 'true'}
                 self.__client.create_container(webapp_container,
-                                   detach=True, tty=True, stdin_open=True,
-                                   environment=env,
-                                   name=container_name,
-                                   command='python runserver.py')
+                                               volumes=['/tmp/openEASE/dockerbridge'],
+                                               detach=True, tty=True, stdin_open=True,
+                                               environment=env,
+                                               name=container_name,
+                                               command='python runserver.py')
                 sysout("Running webapp container " + container_name)
                 self.__client.start(container_name,
-                        port_bindings={5000: ('127.0.0.1',)},
-                        links=links,
-                        volumes_from=volumes)
+                                    binds={lft_dir: {'bind': '/tmp/openEASE/dockerbridge'}},
+                                    port_bindings={5000: ('127.0.0.1',)},
+                                    links=links,
+                                    volumes_from=volumes)
         except (APIError, DockerException), e:
             sysout("Error:" + str(e.message) + "\n")
             traceback.print_exc()
@@ -157,7 +158,7 @@ class DockerManager(object):
             inspect = self.__client.inspect_container(container_name)
             image = inspect['Config']['Image']
             
-            return image is base_container_name
+            return image == base_container_name
         
         except (APIError, DockerException), e:
             sysout("Error:" + str(e.message) + "\n")
