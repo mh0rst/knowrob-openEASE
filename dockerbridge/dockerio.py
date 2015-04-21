@@ -226,8 +226,8 @@ class Pump(object):
 
         try:
             read = self.from_stream.read(n)
-            if read is None:
-                return read
+            if not read:
+                return None
             write = self.to_stream.write(read)
             if write is None:
                 return len(read)

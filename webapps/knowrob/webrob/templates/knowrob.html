@@ -86,6 +86,7 @@
             meshPath: '/meshes/'
       });
       knowrob.init();
+      setInterval(container_refresh, 570000);
       container_refresh();
     });
     function container_refresh() {
@@ -95,7 +96,6 @@
             contentType: "application/json",
             dataType: "json"
         });
-        setTimeout(container_refresh, 570000);
     };
   </script>
   <script type="text/javascript">

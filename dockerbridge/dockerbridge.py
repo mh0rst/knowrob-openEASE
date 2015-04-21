@@ -31,21 +31,21 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         dockermanager.create_user_data_container(container_name)
 
     @pyjsonrpc.rpcmethod
-    def start_user_container(self, container_name, application_container, links, volumes):
+    def start_user_container(self, container_name, container_image, links, volumes):
         check_containername(container_name, 'container_name')
-        check_containername(application_container, 'application_container')
+        check_imagename(container_image, 'container_image')
         # TODO check links and volumes
 
-        dockermanager.start_user_container(container_name, application_container, links, volumes)
+        dockermanager.start_user_container(container_name, container_image, links, volumes)
         timeout.setTimeout(container_name, 600)
     
     @pyjsonrpc.rpcmethod
-    def start_webapp_container(self, container_name, webapp_container, links, volumes):
+    def start_webapp_container(self, container_name, webapp_image, links, volumes):
         check_containername(container_name, 'container_name')
-        check_containername(webapp_container, 'webapp_container')
+        check_imagename(webapp_image, 'webapp_image')
         # TODO check links and volumes
 
-        dockermanager.start_webapp_container(container_name, webapp_container, links, volumes)
+        dockermanager.start_webapp_container(container_name, webapp_image, links, volumes)
 
     @pyjsonrpc.rpcmethod
     def stop_container(self, user_container_name):
@@ -55,12 +55,12 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         timeout.remove(user_container_name)
 
     @pyjsonrpc.rpcmethod
-    def container_exists(self, user_container_name, base_container_name=None):
+    def container_exists(self, user_container_name, base_image_name=None):
         check_containername(user_container_name, 'user_container_name')
-        if base_container_name is not None:
-            check_imagename(base_container_name, 'base_container_name')
+        if base_image_name is not None:
+            check_imagename(base_image_name, 'base_image_name')
 
-        return dockermanager.container_exists(user_container_name, base_container_name)
+        return dockermanager.container_exists(user_container_name, base_image_name)
 
     @pyjsonrpc.rpcmethod
     def get_container_ip(self, user_container_name):
@@ -174,9 +174,8 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         check_pathname(sourcefile, 'sourcefile')
 
         container = data_container_name(user_container_name)
-        file = absolute_userpath(sourcefile)
         data = StringIO.StringIO()
-        filemanager.tar(container, file, data)
+        filemanager.tar(container, sourcefile, data, absolute_userpath(''))
         return base64.b64encode(data.getvalue())
 
     @pyjsonrpc.rpcmethod

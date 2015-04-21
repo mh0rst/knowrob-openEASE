@@ -122,14 +122,17 @@ class FileManager(object):
         self.__start_container(cont)
         self.__stop_and_remove(cont, True)
 
-    def tar(self, container, sourcefile, target):
+    def tar(self, container, sourcefile, target, chdir=None):
         """
         Compresses the given file from the container
         :param container: container to use
         :param sourcefile: file to compress
         :param target: stream to write the data to
+        :param chdir: directory to change to inside tar
         """
-        cont = self.__create_temp_container('tar -c -f - '+sourcefile, container)
+        cont = self.__create_temp_container('tar -c' +
+                                            (' -C '+chdir if chdir is not None else '') +
+                                            ' -f - '+sourcefile, container)
         outstream = self.__attach(cont, 'stdout')
         self.__start_container(cont)
         self.__pump(outstream, target)
@@ -190,7 +193,7 @@ class FileManager(object):
         instream = self.__attach(cont, 'stdin')
         self.__start_container(cont)
         self.__pump(sourcestream, instream)
-        self.__stop_and_remove(cont, True)
+        self.__stop_and_remove(cont)
 
     def __pump(self, instream, outstream):
         pump = dockerio.Pump(instream, outstream)

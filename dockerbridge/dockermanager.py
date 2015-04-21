@@ -20,7 +20,7 @@ class DockerManager(object):
         try:
             self.__start_common_container__(self.__client.containers(all=True))
         except (APIError, DockerException), e:
-            sysout("Error:" + str(e.message) + "\n")
+            sysout("Error:" + str(e.message))
             traceback.print_exc()
 
     def __start_common_container__(self, all_containers):
@@ -39,7 +39,7 @@ class DockerManager(object):
             self.__client.create_container('mongo', detach=True, name='mongo_db')
             self.__client.start('mongo', volumes_from=['mongo_data'])
 
-    def start_user_container(self, container_name, application_container, links, volumes):
+    def start_user_container(self, container_name, container_image, links, volumes):
         try:
             all_containers = self.__client.containers(all=True)
             # Make sure common containers are up and running
@@ -48,8 +48,7 @@ class DockerManager(object):
             self.__stop_container__(container_name, all_containers)
 
             user_home_dir = absolute_userpath('')
-            user_data_container = data_container_name(container_name)
-            volumes += user_data_container
+            volumes.append(data_container_name(container_name))
 
             sysout("Creating user container " + container_name)
             env = {"VIRTUAL_HOST": container_name,
@@ -60,7 +59,7 @@ class DockerManager(object):
                        "/opt/ros/hydro/stacks",
                        user_home_dir
             ])}
-            self.__client.create_container(application_container, detach=True, tty=True, environment=env,
+            self.__client.create_container(container_image, detach=True, tty=True, environment=env,
                                            name=container_name)
 
             sysout("Starting user container " + container_name)
@@ -69,7 +68,7 @@ class DockerManager(object):
                                 links=links,
                                 volumes_from=volumes)
         except (APIError, DockerException), e:
-            sysout("Error:" + str(e.message) + "\n")
+            sysout("Error:" + str(e.message))
             traceback.print_exc()
 
     def create_user_data_container(self, container_name):
@@ -83,11 +82,11 @@ class DockerManager(object):
                 self.__client.start(user_data_container)
                 return True
         except (APIError, DockerException), e:
-            sysout("Error:" + str(e.message) + "\n")
+            sysout("Error:" + str(e.message))
             traceback.print_exc()
         return False
 
-    def start_webapp_container(self, container_name, webapp_container, links, volumes):
+    def start_webapp_container(self, container_name, webapp_image, links, volumes):
         try:
             all_containers = self.__client.containers(all=True)
             # Make sure common containers are up and running
@@ -98,7 +97,7 @@ class DockerManager(object):
                 env = {"VIRTUAL_HOST": container_name,
                        "VIRTUAL_PORT": '5000',
                        "OPEN_EASE_WEBAPP": 'true'}
-                self.__client.create_container(webapp_container,
+                self.__client.create_container(webapp_image,
                                                volumes=['/tmp/openEASE/dockerbridge'],
                                                detach=True, tty=True, stdin_open=True,
                                                environment=env,
@@ -111,22 +110,22 @@ class DockerManager(object):
                                     links=links,
                                     volumes_from=volumes)
         except (APIError, DockerException), e:
-            sysout("Error:" + str(e.message) + "\n")
+            sysout("Error:" + str(e.message))
             traceback.print_exc()
 
     def stop_container(self, container_name):
         try:
             self.__stop_container__(container_name, self.__client.containers(all=True))
         except (APIError, DockerException), e:
-            sysout("Error:" + str(e.message) + "\n")
+            sysout("Error:" + str(e.message))
 
     def __stop_container__(self, container_name, all_containers):
         # check if containers exist:
         if self.__get_container(container_name, all_containers) is not None:
-            sysout("Stopping container " + container_name + "...\n")
+            sysout("Stopping container " + container_name + "...")
             self.__client.stop(container_name, timeout=5)
 
-            sysout("Removing container " + container_name + "...\n")
+            sysout("Removing container " + container_name + "...")
             self.__client.remove_container(container_name)
 
     def get_container_ip(self, container_name):
@@ -146,22 +145,22 @@ class DockerManager(object):
                 logstr += line
             return logstr
         except (APIError, DockerException), e:
-            sysout("Error:" + str(e.message) + "\n")
+            sysout("Error:" + str(e.message))
             return 'error'
 
-    def container_exists(self, container_name, base_container_name=None):
+    def container_exists(self, container_name, base_image_name=None):
         try:
             cont = self.__get_container(container_name, self.__client.containers(all=True))
-            if base_container_name is None or cont is None:
+            if base_image_name is None or cont is None:
                 return cont is not None
             
             inspect = self.__client.inspect_container(container_name)
             image = inspect['Config']['Image']
             
-            return image == base_container_name
+            return image == base_image_name
         
         except (APIError, DockerException), e:
-            sysout("Error:" + str(e.message) + "\n")
+            sysout("Error:" + str(e.message))
             return False
 
     @staticmethod

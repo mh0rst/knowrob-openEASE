@@ -87,8 +87,8 @@ runContainer "dockerbridge" "-d -v /var/run/docker.sock:/var/run/docker.sock -e 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # start a knowrob container for the tutorials
-# TODO replace with docker commands to write secret to data_tutorials
-< /dev/urandom tr -dc _A-Z-a-z-0-9 | head --bytes=16 | docker run --rm -i --volumes-from data_tutorials busybox sh -c 'cat > /home/suturo/.rviz/tutorials'
+runContainer "data_tutorials" "-v /etc/rosauth knowrob/user_data true"
+< /dev/urandom tr -dc _A-Z-a-z-0-9 | head --bytes=16 | docker run --rm -i --volumes-from data_tutorials busybox sh -c 'cat > /etc/rosauth/secret'
 runContainer "tutorials" "-d -e VIRTUAL_HOST=tutorials -e VIRTUAL_PORT=9090 --volumes-from data_tutorials --volumes-from knowrob_data:ro --link mongo_db:mongo knowrob/hydro-knowrob-daemon" true
 
 # Wait for the postgres port to be available

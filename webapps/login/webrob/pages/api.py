@@ -20,7 +20,7 @@ def login_by_session():
     """
     if current_user.is_authenticated():
         ip = docker_interface.get_container_ip(session['user_container_name'])
-        return generate_rosauth(session['user_container_name'], ip)
+        return generate_rosauth(session['user_container_name'], ip, True)
     return jsonify({'error': 'not authenticated'})
 
 
@@ -115,7 +115,7 @@ def user_by_token(token):
     return User.query.filter_by(api_token=token).first()
 
 
-def generate_rosauth(user_container_name, dest):
+def generate_rosauth(user_container_name, dest, cache=False):
     """
     Generate the mac for use with rosauth and compile a json object with all necessary information to authenticate
     with the server.
@@ -131,9 +131,8 @@ def generate_rosauth(user_container_name, dest):
     level = "user"
     end = int(t + 3600)
 
-
     return jsonify({
-            'mac': generate_mac(user_container_name, client, dest, rand, t, level, end),
+            'mac': generate_mac(user_container_name, client, dest, rand, t, level, end, cache),
             'client': client,
             'dest': dest,
             'rand': rand,
