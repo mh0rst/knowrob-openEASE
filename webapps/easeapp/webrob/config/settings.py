@@ -27,6 +27,6 @@ APPLICATIONS = {
         
         'application'        : 'knowrob/hydro-knowrob-daemon',
         'application_links'  : [('mongo_db', 'mongo')],
-        'application_volumes': ['knowrob_data:ro']
+        'application_volumes': ['knowrob_data:ro', 'mesh_data:ro']
     }
 }
