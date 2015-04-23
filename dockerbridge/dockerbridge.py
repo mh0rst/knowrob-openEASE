@@ -101,6 +101,10 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         filemanager.tocontainer(container, to_deb64_stream(data), file, 1000)
 
     @pyjsonrpc.rpcmethod
+    def files_lft_set_writeable(self):
+        filemanager.chown_hostmount(1000, 1000)
+
+    @pyjsonrpc.rpcmethod
     def files_largefromcontainer(self, user_container_name, sourcefile, targetfile):
         check_pathname(sourcefile, 'sourcefile')
         check_pathname(targetfile, 'targetfile')
@@ -160,13 +164,13 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         filemanager.mkdir(container, file, True, 1000)
 
     @pyjsonrpc.rpcmethod
-    def files_rm(self, user_container_name, file):
+    def files_rm(self, user_container_name, file, recursive=False):
         check_containername(user_container_name, 'user_container_name')
         check_pathname(file, 'file')
 
         container = data_container_name(user_container_name)
         filetorm = absolute_userpath(file)
-        filemanager.rm(container, filetorm, True)
+        filemanager.rm(container, filetorm, recursive)
 
     @pyjsonrpc.rpcmethod
     def files_tar(self, user_container_name, sourcefile):
@@ -188,13 +192,13 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         filemanager.untar(container, to_deb64_stream(source), file, 1000)
 
     @pyjsonrpc.rpcmethod
-    def files_ls(self, user_container_name, dir):
+    def files_ls(self, user_container_name, dir, recursive=False):
         check_containername(user_container_name, 'user_container_name')
         check_pathname(dir, 'dir')
 
         container = data_container_name(user_container_name)
         file = absolute_userpath(dir)
-        return filemanager.listfiles(container, file)
+        return filemanager.listfiles(container, file, recursive)
 
 
 def handler(signum, frame):

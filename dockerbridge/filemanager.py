@@ -94,10 +94,7 @@ class FileManager(object):
         :param container: container to check for file existence in
         :param file: the file to check
         """
-        ls = self.__ls(container, file)
-        if len(ls) > 0:
-            return 'No such file or directory' not in ls[0]
-        return False
+        return 'Yep' in self.__exists(container, file)
 
     def mkdir(self, container, dir, parents=False, user=0):
         """
@@ -151,29 +148,53 @@ class FileManager(object):
         self.__pump(source, instream)
         self.__stop_and_remove(cont, True)
 
-    def listfiles(self, container, dir):
+    def listfiles(self, container, dir, recursive=True):
         """
-        Returns all files found in given directory (including subdirectories) inside the container
+        Returns all files found in given directory inside the container
         :param container: Name of the data container
         :param dir: Path to list the files from
+        :param recursive: whether to recursively list all files including subdirectories
         :return: a string list of files
         """
-        find = self.__find(container, dir)
+        opts = ' -maxdepth 1' if not recursive else ''
+        opts += ' -exec sh -c \'"\'"\'test -d {} && echo -n d || echo -n f; echo {}\'"\'"\' \;'
+        find = self.__find(container, dir, opts)
         if len(find) > 0:
             del find[0]
-        return find
+        children = []
+        if len(find) > 0:
+            children = self.__filter_ls(find)
+        return {'name': dir[dir.rfind("/")+1:], 'children': children, 'isdir': True}
 
-    def __ls(self, data_container, file):
-        cont = self.__create_temp_container('ls '+file, data_container)
+    def __filter_ls(self, list, prefix='.'):
+        result = []
+        visited_subdirs = []
+        for i in range(0, len(list)):
+            entry = list[i]
+            if not entry.startswith(prefix, 1):
+                break
+            if len(filter(lambda s: s in entry[1:], visited_subdirs)) > 0:
+                continue
+            isdir = entry.startswith('d')
+            children = []
+            if isdir:
+                children = self.__filter_ls(list[i+1:], entry[1:])
+                visited_subdirs.append(entry[1:])
+            name = entry[entry.rfind("/")+1:]
+            result.append({'name': name, 'children': children, 'isdir': isdir})
+        return result
+
+    def __exists(self, data_container, file):
+        cont = self.__create_temp_container('test -e '+file+' && echo Yep', data_container)
         outstream = self.__attach(cont, 'stdout')
         self.__start_container(cont)
         result = StringIO.StringIO()
         self.__pump(outstream, result)
         self.__stop_and_remove(cont, True)
-        return result.getvalue().splitlines()
+        return result.getvalue()
 
-    def __find(self, data_container, dir):
-        cont = self.__create_temp_container('cd '+dir+' && find .', data_container)
+    def __find(self, data_container, dir, opts):
+        cont = self.__create_temp_container('sh -c \'cd '+dir+' && find .'+opts+'\'', data_container)
         outstream = self.__attach(cont, 'stdout')
         self.__start_container(cont)
         result = StringIO.StringIO()

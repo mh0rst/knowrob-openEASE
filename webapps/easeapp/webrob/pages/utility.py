@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: iso-8859-15 -*-
-# @author Daniel Be�ler
+# @author Daniel Beßler
 
 import os
 import string
@@ -20,18 +20,6 @@ def get_applications():
         return app.config['APPLICATIONS'].keys()
     except:
         return None
-
-def get_user_dir():
-    userDir = "/home/ros/user_data/" + session['user_container_name']
-    if not os.path.exists(userDir):
-        app.logger.info("Creating user directory at " + userDir)
-        os.makedirs(userDir)
-    return userDir
-
-def write_text_file(path, content):
-    f = open(path, "w")
-    f.write(content)
-    f.close()
 
 def copy_template_file(src, dst, args):
     # Read the template file
