@@ -35,5 +35,13 @@ def copy_template_file(src, dst, args):
     dst_f.close()
 
 
+def get_user_dir():
+    userDir = "/home/ros/user_data/" + session['user_container_name']
+    if not os.path.exists(userDir):
+        app.logger.info("Creating user directory at " + userDir)
+        os.makedirs(userDir)
+    return userDir
+
+
 def random_string(length):
     return "".join([random.choice(string.ascii_letters + string.digits) for n in xrange(length)])
