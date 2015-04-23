@@ -14,7 +14,7 @@ import StringIO
 import pyjsonrpc
 
 from dockermanager import DockerManager
-from filemanager import FileManager, absolute_userpath, data_container_name, host_transferpath
+from filemanager import FileManager, absolute_userpath, data_container_name, lft_transferpath
 from securitycheck import *
 from timeoutmanager import TimeoutManager
 from utils import sysout
@@ -102,7 +102,7 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
 
     @pyjsonrpc.rpcmethod
     def files_lft_set_writeable(self):
-        filemanager.chown_hostmount(1000, 1000)
+        filemanager.chown_lft(1000, 1000)
 
     @pyjsonrpc.rpcmethod
     def files_largefromcontainer(self, user_container_name, sourcefile, targetfile):
@@ -110,7 +110,7 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         check_pathname(targetfile, 'targetfile')
 
         file = absolute_userpath(sourcefile)
-        target = host_transferpath(targetfile)
+        target = lft_transferpath(targetfile)
         self.__largecopy(user_container_name, file, target)
 
     @pyjsonrpc.rpcmethod
@@ -118,7 +118,7 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         check_pathname(sourcefile, 'sourcefile')
         check_pathname(targetfile, 'targetfile')
 
-        file = host_transferpath(sourcefile)
+        file = lft_transferpath(sourcefile)
         target = absolute_userpath(targetfile)
         self.__largecopy(user_container_name, file, target)
 
@@ -126,7 +126,7 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         check_containername(user_container_name, 'user_container_name')
 
         container = data_container_name(user_container_name)
-        filemanager.copy_with_hostmount(container, src, tgt, 1000)
+        filemanager.copy_with_lft(container, src, tgt, 1000)
 
     @pyjsonrpc.rpcmethod
     def files_readsecret(self, user_container_name):
@@ -171,25 +171,6 @@ class DockerBridge(pyjsonrpc.HttpRequestHandler):
         container = data_container_name(user_container_name)
         filetorm = absolute_userpath(file)
         filemanager.rm(container, filetorm, recursive)
-
-    @pyjsonrpc.rpcmethod
-    def files_tar(self, user_container_name, sourcefile):
-        check_containername(user_container_name, 'user_container_name')
-        check_pathname(sourcefile, 'sourcefile')
-
-        container = data_container_name(user_container_name)
-        data = StringIO.StringIO()
-        filemanager.tar(container, sourcefile, data, absolute_userpath(''))
-        return base64.b64encode(data.getvalue())
-
-    @pyjsonrpc.rpcmethod
-    def files_untar(self, user_container_name, source, targetdir):
-        check_containername(user_container_name, 'user_container_name')
-        check_pathname(targetdir, 'targetdir')
-
-        container = data_container_name(user_container_name)
-        file = absolute_userpath(targetdir)
-        filemanager.untar(container, to_deb64_stream(source), file, 1000)
 
     @pyjsonrpc.rpcmethod
     def files_ls(self, user_container_name, dir, recursive=False):

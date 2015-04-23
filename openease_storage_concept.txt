@@ -11,9 +11,6 @@ ANY ADDITIONS or CHANGES to the docker data container structure of openEASE or t
 1. Data from mounted host directories
 
 The openEASE platform uses the following host directories and files:
-- /tmp/openEASE/dockerbridge (or any other place, if specified by OPENEASE_LFT environment variable): 
-	A folder, where easeapp containers temporarily stores large files and folders. Transfers of large files from the user data containers to the easeapp containers and back will are stored here.
-	Used by: All easeapp containers, intermediate containers created on the fly for every large file copy action
 - /var/run/docker.sock:
 	The unix socket file for the docker API. Access to this file basically is equivalent to having ROOT access to the HOST, so be careful! This file is needed to dynamically control easeapp and user containers from the dockerbridge. Also the docker-gen container has access to monitor container spawns/shutdowns for adjusting the nginx reverse proxy on the fly.
 	Used by: dockerbridge, docker-gen
@@ -38,6 +35,10 @@ The openEASE platform uses the following host directories and files:
 		- /home/ros/knowrob_data
 		Used for common data files needed in every user container and the easeapp containers, like common experiment data.
 		Used by: easeapp/knowrob container and (read-only) all easeapp/knowrob user containers.
+	lft_data
+		- /tmp/openEASE/dockerbridge
+		A folder, where easeapp containers temporarily stores large files and folders. Transfers of large files from the user data containers to the easeapp containers and back will are stored here.
+		Used by: All easeapp containers, intermediate containers created on the fly for every large file copy action
 	data_* (user data containers, * is the users user name)
 		- /home/ros/user_data
 		Used for data required by the user container, like custom prolog modules or generated files.

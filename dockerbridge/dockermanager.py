@@ -6,7 +6,7 @@ import traceback
 
 import docker
 from docker.errors import *
-from filemanager import data_container_name, absolute_userpath, lft_dir
+from filemanager import data_container_name, absolute_userpath
 
 from utils import sysout
 
@@ -33,6 +33,11 @@ class DockerManager(object):
             sysout("Creating mongo data container.")
             self.__client.create_container('busybox', detach=True, name='mongo_data', volumes=['/data/db'],
                                            entrypoint='true')
+
+        if self.__get_container("lft_data", all_containers) is None:
+            sysout("Creating large file transfer data container.")
+            self.__client.create_container('busybox', detach=True, name='lft_data',
+                                           volumes=['/tmp/openEASE/dockerbridge'], entrypoint='true')
 
         if self.__get_container("mongo_db", all_containers) is None:
             sysout("Creating mongo container.")
@@ -97,15 +102,14 @@ class DockerManager(object):
                 env = {"VIRTUAL_HOST": container_name,
                        "VIRTUAL_PORT": '5000',
                        "OPEN_EASE_WEBAPP": 'true'}
+                volumes.append('lft_data')
                 self.__client.create_container(webapp_image,
-                                               volumes=['/tmp/openEASE/dockerbridge'],
                                                detach=True, tty=True, stdin_open=True,
                                                environment=env,
                                                name=container_name,
                                                command='python runserver.py')
                 sysout("Running webapp container " + container_name)
                 self.__client.start(container_name,
-                                    binds={lft_dir: {'bind': '/tmp/openEASE/dockerbridge'}},
                                     port_bindings={5000: ('127.0.0.1',)},
                                     links=links,
                                     volumes_from=volumes)

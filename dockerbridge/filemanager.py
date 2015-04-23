@@ -2,17 +2,12 @@
 Basic file handling functions for handling data in docker data containers.
 """
 import StringIO
-import os
 
 import docker
 from docker.errors import APIError
 import dockerio
 
 __author__ = 'mhorst@cs.uni-bremen.de'
-
-
-# Temporary large file directory on host
-lft_dir = os.environ["OPENEASE_LFT"]
 
 
 def data_container_name(user_container_name):
@@ -29,10 +24,9 @@ def absolute_userpath(relative):
     return '/home/ros/user_data/'+relative
 
 
-def host_transferpath(relative):
+def lft_transferpath(relative):
     """
-    Return the absolute path to the given relative filename in the hosts large file transfer directory mounted inside
-    the the user data container.
+    Return the absolute path to the given relative filename in the large file transfer container
     """
     return '/tmp/openEASE/dockerbridge/'+relative
 
@@ -61,9 +55,10 @@ class FileManager(object):
         """
         self.__writefile(container, source, targetfile, user)
 
-    def copy_with_hostmount(self, container, sourcefile, targetfile, user=0):
+    def copy_with_lft(self, container, sourcefile, targetfile, user=0):
         """
-        Copies the given sourcefile to the given target with a mounted data container and host transfermount
+        Copies the given sourcefile to the given target with a mounted data container and a large file transfer
+        container
         :param container: datacontainer to mount
         :param sourcefile: file to copy to the target
         :param targetfile: target to copy the file to
@@ -72,19 +67,19 @@ class FileManager(object):
         # If source is a folder and target folder already exists, integrate sourcefolder in targetfolder. otherwise
         # copy. Note that copy might fail or produce unexpected results if target already exists (folder -> file results
         # in failure, file -> folder will copy the file INTO the folder)
-        cp_cmd = "sh -c 'test -e "+targetfile+' && test -d '+targetfile+ \
+        cp_cmd = "sh -c 'test -e "+targetfile+' && test -d '+targetfile + \
                  '&& cp -rf '+sourcefile+'/* '+targetfile+' || cp -rf '+sourcefile+' '+targetfile+"'"
-        cont = self.__create_temp_hostmount_container(cp_cmd, container, user)
+        cont = self.__create_temp_lft_container(cp_cmd, container, user)
         self.__start_container(cont)
         self.__stop_and_remove(cont, True)
 
-    def chown_hostmount(self, user=0, group=0):
+    def chown_lft(self, user=0, group=0):
         """
-        Runs recursive chown with the given user and group on the host transfermount
+        Runs recursive chown with the given user and group on the lft helper container
         :param user: UID or username
         :param group: GID or groupname
         """
-        cont = self.__create_temp_hostmount_container('chown -R '+str(user)+':'+str(group)+' '+host_transferpath('.'))
+        cont = self.__create_temp_lft_container('chown -R '+str(user)+':'+str(group)+' '+lft_transferpath('.'))
         self.__start_container(cont)
         self.__stop_and_remove(cont, True)
 
@@ -117,35 +112,6 @@ class FileManager(object):
         """
         cont = self.__create_temp_container('rm '+('-r ' if recursive else ' ')+file, container)
         self.__start_container(cont)
-        self.__stop_and_remove(cont, True)
-
-    def tar(self, container, sourcefile, target, chdir=None):
-        """
-        Compresses the given file from the container
-        :param container: container to use
-        :param sourcefile: file to compress
-        :param target: stream to write the data to
-        :param chdir: directory to change to inside tar
-        """
-        cont = self.__create_temp_container('tar -c' +
-                                            (' -C '+chdir if chdir is not None else '') +
-                                            ' -f - '+sourcefile, container)
-        outstream = self.__attach(cont, 'stdout')
-        self.__start_container(cont)
-        self.__pump(outstream, target)
-        self.__stop_and_remove(cont, True)
-
-    def untar(self, container, source, targetdir, user=0):
-        """
-        Untar the tar file from the source stream into the targetdir inside the container
-        :param container: container to use
-        :param source: stream of a tar file
-        :param targetdir: directory to extract the tar file into
-        """
-        cont = self.__create_temp_container('tar -x -C '+targetdir+' -f -', container, user)
-        instream = self.__attach(cont, 'stdin')
-        self.__start_container(cont)
-        self.__pump(source, instream)
         self.__stop_and_remove(cont, True)
 
     def listfiles(self, container, dir, recursive=True):
@@ -227,14 +193,14 @@ class FileManager(object):
                                             host_config={"LogConfig": {"Config": "", "Type": "none"},
                                                          "VolumesFrom": [data_container] })
 
-    def __create_temp_hostmount_container(self, cmd, data_container=None, user=0):
-        bind=host_transferpath('')
-        return self.docker.create_container(stdin_open=True,  image='busybox:latest', command=cmd, user=user,
-                                            volumes=[bind],
-                                            host_config={"Binds": [lft_dir+':'+bind],
-                                                         "LogConfig": {"Config": "", "Type": "none"},
-                                                         "VolumesFrom": [data_container] if data_container is not None
-                                                         else ''})
+    def __create_temp_lft_container(self, cmd, data_container=None, user=0):
+        bind=lft_transferpath('')
+        volumes = ['lft_data']
+        if data_container is not None:
+            volumes.append(data_container)
+        return self.docker.create_container(stdin_open=True, image='busybox:latest', command=cmd, user=user,
+                                            host_config={"LogConfig": {"Config": "", "Type": "none"},
+                                                         "VolumesFrom": volumes})
 
     def __attach(self, container, streamtype):
         socket = self.docker.attach_socket(container, {streamtype: 1, 'stream': 1})
