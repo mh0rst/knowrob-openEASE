@@ -32,7 +32,22 @@ def lft_transferpath(relative):
 
 
 class FileManager(object):
+    """
+    This class provides operations for reading and writing files from docker data containers that are not mounted to
+    the own docker container (i.e. because they were created later than the own container).
 
+    It can access and write single, small files, it can copy files and folders across the data and the lft_data
+    container (which can be mounted by any docker container beforehand). Furthermore, it checks for file existence,
+    creates directories, deletes files and directories and provides (optionally recursive) directory listings in an
+    easily parseable format.
+
+    Note that this class does some very ugly things to accomplish these functions, i.e. cat to stdin/out, or spawning
+    a (temporary) docker container for each action. It is slower than direct file access and should be replaced by
+    native docker functions (like https://github.com/docker/docker/pull/10198) when they come available. Also, some of
+    the limitations and uglyness of this code comes from only having the standard busybox container as base image for
+    temporary containers. For more complex functions, there should be a custom image with a more intelligent (network
+    based) solution (preferably some lightweight HTTP REST interface) other than piping stdin/out and using cp and find.
+    """
     def __init__(self):
         self.docker = docker.Client(base_url='unix://var/run/docker.sock', version='1.18', timeout=10)
 
@@ -123,6 +138,8 @@ class FileManager(object):
         :return: a string list of files
         """
         opts = ' -maxdepth 1' if not recursive else ''
+        # The following string basically tests for each file 'find' returns if it is a directory, and prepends a 'd' to
+        # the output of the filename. If it is something else (e.g. a normal file), it will prepend an 'f'.
         opts += ' -exec sh -c \'"\'"\'test -d {} && echo -n d || echo -n f; echo {}\'"\'"\' \;'
         find = self.__find(container, dir, opts)
         if len(find) > 0:
@@ -136,16 +153,23 @@ class FileManager(object):
         result = []
         visited_subdirs = []
         for i in range(0, len(list)):
-            entry = list[i]
-            if not entry.startswith(prefix, 1):
+            # Here we check for the 'd' we prepended to the output of each 'find' result earlier
+            isdir = list[i].startswith('d')
+            # Remove the prepended letter for further actions
+            entry = list[i][1:]
+            # If we are leaving the currently processed directory
+            if not entry.startswith(prefix):
                 break
-            if len(filter(lambda s: s in entry[1:], visited_subdirs)) > 0:
+            # Continue if the current entry is a subdirectory that has already been processed.
+            if len(filter(lambda s: s in entry, visited_subdirs)) > 0:
                 continue
-            isdir = entry.startswith('d')
             children = []
             if isdir:
-                children = self.__filter_ls(list[i+1:], entry[1:])
-                visited_subdirs.append(entry[1:])
+                # If this is a directory, pass the following entries recursively to this method to get the children.
+                # This works because 'find' recursively enters all directories and appends the results directly under
+                # each directory.
+                children = self.__filter_ls(list[i+1:], entry)
+                visited_subdirs.append(entry)
             name = entry[entry.rfind("/")+1:]
             result.append({'name': name, 'children': children, 'isdir': isdir})
         return result
