@@ -7,7 +7,7 @@ from webrob.docker import docker_interface
 def ensure_application_started(application_name):
     session['application_name'] = application_name
     image = get_application_description(application_name)['application']
-    if not docker_interface.container_exists(session['user_container_name'], image):
+    if not docker_interface.container_started(session['user_container_name'], image):
         return start_application()
     else:
         return True
