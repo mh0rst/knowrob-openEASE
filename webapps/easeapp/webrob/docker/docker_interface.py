@@ -39,7 +39,7 @@ def clear_secretcache():
 def get_application_image_names():
     try:
         return client.get_application_image_names()
-    except InternalError, e:
+    except JsonRpcError, e:
         flash("Error: Connection to your application failed.")
         app.logger.error("ConnectionError during connect: " + str(e.message) + str(e.data) + "\n")
     except URLError, e:
@@ -51,7 +51,7 @@ def get_application_image_names():
 def get_webapp_image_names():
     try:
         return client.get_webapp_image_names()
-    except InternalError, e:
+    except JsonRpcError, e:
         flash("Error: Connection to your application failed.")
         app.logger.error("ConnectionError during connect: " + str(e.message) + str(e.data) + "\n")
     except URLError, e:
@@ -168,7 +168,7 @@ def get_container_log(user_container_name):
 def get_container_env(user_container_name, key):
     try:
         return client.get_container_env(user_container_name, key)
-    except InternalError, e:
+    except JsonRpcError, e:
         flash("Error: Connection to your application failed.")
         app.logger.error("ConnectionError during connect: " + str(e.message) + str(e.data) + "\n")
     except URLError, e:
