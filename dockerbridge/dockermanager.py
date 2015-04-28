@@ -124,6 +124,7 @@ class DockerManager(object):
                 img_env = dict(map(lambda x: x.split("="), inspect['Config']['Env']))
                 links = map(lambda x: tuple(x.split(':')), img_env['DOCKER_LINKS'].split(' '))
                 volumes = img_env['DOCKER_VOLUMES'].split(' ')
+                volumes.append('ease_secret:ro')
                 volumes.append('lft_data')
                 
                 sysout("Running webapp container " + container_name)
