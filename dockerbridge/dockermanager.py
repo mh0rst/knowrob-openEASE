@@ -2,6 +2,7 @@
 The DockerManager handles all communication with docker api and provides an API for all actions webrob need to perform
 with the docker host.
 """
+import os
 import traceback
 
 import docker
@@ -101,8 +102,8 @@ class DockerManager(object):
                 sysout("Creating webapp container " + container_name)
                 env = {"VIRTUAL_HOST": container_name,
                        "VIRTUAL_PORT": '5000',
-                       "OPEN_EASE_WEBAPP": 'true'}
-                volumes.append('lft_data')
+                       "OPEN_EASE_WEBAPP": 'true',
+                       "EASE_DEBUG": os.environ['EASE_DEBUG']}
                 self.__client.create_container(webapp_image,
                                                detach=True, tty=True, stdin_open=True,
                                                environment=env,

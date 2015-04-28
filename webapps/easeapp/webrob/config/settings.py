@@ -1,6 +1,6 @@
 import os
 
-SECRET_KEY='\\\xf8\x12\xdc\xf5\xb2W\xd4Lh\xf5\x1a\xbf"\x05@Bg\xdf\xeb>E\xd8<'
+DEV_SECRET_KEY='\\\xf8\x12\xdc\xf5\xb2W\xd4Lh\xf5\x1a\xbf"\x05@Bg\xdf\xeb>E\xd8<'
 
 SQLALCHEMY_DATABASE_URI = 'postgresql://docker@' + \
     os.environ['POSTGRES_PORT_5432_TCP_ADDR'] + ':' + \
@@ -23,7 +23,7 @@ APPLICATIONS = {
     'knowrob': {
         'webapp'             : 'openease/knowrob',
         'webapp_links'       : [('postgres_db', 'postgres'), ('dockerbridge', 'dockerbridge')],
-        'webapp_volumes'     : ['user_data', 'knowrob_data', 'mesh_data', 'summary_data'],
+        'webapp_volumes'     : ['ease_secret:ro', 'lft_data', 'user_data', 'knowrob_data', 'mesh_data', 'summary_data'],
         
         'application'        : 'knowrob/hydro-knowrob-daemon',
         'application_links'  : [('mongo_db', 'mongo')],
