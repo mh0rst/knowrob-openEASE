@@ -6,7 +6,6 @@
 # Authors: Ling Thio <ling.thio@gmail.com>
 
 
-import logging
 from logging.handlers import SMTPHandler
 import os
 from flask_mail import Mail
