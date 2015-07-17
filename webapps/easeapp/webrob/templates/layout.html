@@ -110,6 +110,15 @@
     };
     
     function add_submenu(menu, value) {
+        // Try to find existing submenu
+        for(var i=0; i<menu.childElementCount; ++i) {
+            var _li = menu.childNodes[i];
+            var _item = _li.childNodes[0];
+            if(_item.childNodes[0].nodeValue == value) {
+                return _li.childNodes[1];
+            }
+        }
+    
         var submenu = document.createElement("ul");
         var li = document.createElement("li");
         var item = document.createElement("a");
@@ -122,6 +131,13 @@
     };
     
     function add_common_menu_items(left_menu, right_menu, application_name, application_list) {
+        {% if current_user.is_authenticated() and current_user.has_role('ADMIN') %}
+            handle_webapp_menu(left_menu, ["CHOICES", ["Admin", [
+                    ["Roles", "/admin/roles"],
+                    ["Users", "/admin/users"]
+            ]]]);
+        {% endif %}
+        
         if(left_menu) {
             add_menu_item(left_menu, "Log", "{{ url_for('log') }}");
         }
