@@ -3,6 +3,7 @@ docker pull busybox
 docker pull mongo
 docker pull nginx
 docker pull jwilder/docker-gen
+docker pull openease/dns
 docker pull knowrob/user_db
 docker pull knowrob/user_data
 docker pull knowrob/postgres
@@ -13,12 +14,5 @@ docker pull knowrob/dockerbridge
 
 
 # WebApp container
-docker pull openease/easeapp
-docker pull openease/login
-docker pull openease/knowrob
-
-# update the common data container:
-docker pull knowrob/knowrob_data:latest
-docker rm knowrob_data
-docker run --name knowrob_data knowrob/knowrob_data:latest true
+docker pull openease/flask
 

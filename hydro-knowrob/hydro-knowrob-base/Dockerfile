@@ -5,9 +5,9 @@ MAINTAINER Moritz Tenorth, moritz@tenorth.de
 RUN echo 'Acquire::http { Proxy "http://172.17.42.1:3142"; };' >> /etc/apt/apt.conf.d/01proxy
 
 # install helper packages for ROS
-RUN apt-get -y update && apt-get -y install python-yaml python-catkin-pkg python-rospkg emacs ros-hydro-catkin git ros-hydro-iai-common-msgs \
+RUN apt-get -qq -y update && apt-get -qq -y install python-yaml python-catkin-pkg python-rospkg emacs ros-hydro-catkin git ros-hydro-iai-common-msgs \
                        ros-hydro-rosjava ros-hydro-rosbridge-suite ros-hydro-tf2-web-republisher ros-hydro-mjpeg-server \
-                       mongodb-clients ros-hydro-rosauth
+                       mongodb-clients mongodb-dev libmongo-client-dev ros-hydro-rosauth mencoder lame libavcodec-extra-53
 
 # create user 'ros'
 RUN useradd -m -d /home/ros -p ros ros && adduser ros sudo && chsh -s /bin/bash ros
@@ -49,8 +49,8 @@ ENV PYTHONPATH /home/ros/devel/lib/python2.7/dist-packages:/opt/ros/hydro/lib/py
 
 ENV DOCKER_LINKS mongo_db:mongo
 # TODO: Mount mesh_data read only. Note: Meshes can be generated in knowrob_vis and saved in mesh_data 
-ENV DOCKER_VOLUMES knowrob_data:ro mesh_data summary_data
-#ENV DOCKER_VOLUMES knowrob_data:ro mesh_data:ro summary_data
+ENV DOCKER_VOLUMES episode_data:ro mesh_data
+#ENV DOCKER_VOLUMES knowrob_data:ro mesh_data:ro
 
 # forward ports: KnowRob webserver + rosbridge
 EXPOSE 1111 9090

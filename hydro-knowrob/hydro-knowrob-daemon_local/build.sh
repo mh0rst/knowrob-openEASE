@@ -5,7 +5,7 @@ NAMES="knowrob knowrob_addons knowrob_dev iai_maps iai_common_msgs iai_cad_tools
 
 SCRIPT=`readlink -f "$0"`
 DIR=`dirname $SCRIPT`
-LOCAL_DIR="$DIR/knowrob"
+LOCAL_DIR="$DIR/src"
 KNOWROB_FOUND=0
 
 is_knowrob_dir() {
@@ -28,7 +28,7 @@ is_knowrob_dir() {
 create_archive() {
   cd $1
   rm -rf ./src.tar
-  tar --exclude=.svn --exclude=.git --exclude=build --exclude=.gradle -cf ./src.tar ./*
+  tar --exclude=.svn --exclude=.git --exclude=build --exclude=bin --exclude=.gradle -cf ./src.tar ./*
   mv ./src.tar $DIR/
   cd $DIR
 }
@@ -45,8 +45,9 @@ clone_knowrob_repo() {
 }
 
 clone_knowrob() {
-  clone_knowrob_repo knowrob         https://github.com/knowrob/knowrob.git           indigo-devel
-  clone_knowrob_repo knowrob_addons  https://github.com/knowrob/knowrob_addons.git    indigo-devel
+  clone_knowrob_repo knowrob            https://github.com/knowrob/knowrob.git           master
+  clone_knowrob_repo knowrob_addons     https://github.com/knowrob/knowrob_addons.git    master
+  clone_knowrob_repo knowrob_tutorials  https://github.com/knowrob/knowrob_tutorials.git master
   clone_knowrob_repo knowrob_dev     https://github.com/code-iai/knowrob_dev.git      master
   clone_knowrob_repo iai_maps        https://github.com/code-iai/iai_maps.git         master
   clone_knowrob_repo iai_common_msgs https://github.com/code-iai/iai_common_msgs.git  master
