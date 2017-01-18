@@ -204,9 +204,6 @@ class FileManager(object):
         instream = self.__attach(cont, 'stdin')
         self.__start_container(cont)
         self.__pump(sourcestream, instream)
-        # docker sometimes doesn't get EOF, thus leaving the socket open with the process still running.
-        # close stdin after pumping so it doesn't hang while waiting.
-        instream.stream.fd.close()
         self.__stop_and_remove(cont, True)
 
     def __pump(self, instream, outstream):
@@ -245,7 +242,7 @@ class FileManager(object):
     def __stop_and_remove(self, container, wait=False):
         try:
             if wait:
-                self.docker.wait(container, timeout=60)
+                self.docker.wait(container, timeout=5)
         except APIError as e:
             # If any error occurs, kill the remaining container.
             self.__stop_and_remove(container)
