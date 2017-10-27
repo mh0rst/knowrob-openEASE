@@ -8,17 +8,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -qq install -y -q subversion git
 
 RUN easy_install pymongo
 RUN pip install psycopg2 python-jsonrpc tornado
-# NOTE: At the moment Flask-Misaka==0.3 is incompatible with latest misaka==2.0.0
-# @see https://github.com/singingwolfboy/flask-misaka/issues/11
-# TODO: Hard to maintain this. Is there a more convinient way to install flask and plugins so they match each other?
-RUN pip install Flask==0.11.1 \
-                misaka==1.0.2 \
-                Flask-Misaka==0.3 \
-                Flask-Login==0.3.2 \
-                Flask-OAuth \
-                flask-user \
-                flask-babel \
-                flask-mail
+ADD requirements.txt /tmp/webapp_requirements.txt
+RUN pip install -r /tmp/webapp_requirements.txt
 WORKDIR /opt/webapp
 
 # flag used in nginx configuration
