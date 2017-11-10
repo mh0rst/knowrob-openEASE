@@ -24,7 +24,8 @@ RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net --recv-key 421C365B
     apt-get -qq -y autoremove && \
     apt-get -qq -y clean && \
     rm -rf /var/lib/apt/lists/* && \
-    rm -rf /tmp/*
+    rm -rf /tmp/* && \
+    perl -pi.bak -e 's/EC keySize < 224/EC keySize < 224, ECDSA/g' /etc/java-7-openjdk/security/java.security
 RUN update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/java-1.7.0-openjdk-amd64/jre/bin/java" 1 && \
     update-alternatives --install "/usr/bin/javac" "javac" "/usr/lib/jvm/java-1.7.0-openjdk-amd64/bin/javac" 1 && \
     update-alternatives --set java "/usr/lib/jvm/java-1.7.0-openjdk-amd64/jre/bin/java" && \
