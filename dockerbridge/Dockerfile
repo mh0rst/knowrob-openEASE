@@ -1,10 +1,11 @@
-FROM ubuntu:12.04
-MAINTAINER Moritz Horstmann, mhorst@tzi.de
+FROM ubuntu:16.04
+MAINTAINER Moritz Horstmann, dev@peterzweg.at
 
 RUN apt-get -qq update
-RUN apt-get -qq install -y python-all python-pip python-dev
+RUN apt-get -qq install -y python-pip
 
-RUN pip install python-jsonrpc docker-py
+ADD requirements.txt /tmp/dockerbridge_requirements.txt
+RUN pip install -r /tmp/dockerbridge_requirements.txt
 
 WORKDIR /opt/dockerbridge
 ADD . /opt/dockerbridge
