@@ -15,6 +15,8 @@ RUN git clone --recursive https://github.com/knowrob/knowrob.git -b master && \
     git clone https://github.com/code-iai/iai_cad_tools.git
 
 WORKDIR /home/ros
+# Workaround for somehow missing java tf msg generation for knowrob_beliefstate
+RUN /opt/ros/indigo/bin/genjava_message_artifacts -p tf
 # Build the catkin workspace
 RUN /opt/ros/indigo/bin/catkin_make
 
