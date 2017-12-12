@@ -1,2 +1,2 @@
 python-jsonrpc
-docker-py
+docker

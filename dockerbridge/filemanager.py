@@ -49,7 +49,7 @@ class FileManager(object):
     based) solution (preferably some lightweight HTTP REST interface) other than piping stdin/out and using cp and find.
     """
     def __init__(self):
-        self.docker = docker.Client(base_url='unix://var/run/docker.sock', version='1.18', timeout=10)
+        self.docker = docker.from_env(version='1.18', timeout=10)
 
     def fromcontainer(self, container, sourcefile, target):
         """
@@ -213,27 +213,25 @@ class FileManager(object):
                 break
 
     def __create_temp_container(self, cmd, data_container, user=0):
-        return self.docker.create_container(stdin_open=True,  image='busybox:latest', command=cmd, user=str(user),
-                                            host_config={"LogConfig": {"Config": {}, "Type": "none"},
-                                                         "VolumesFrom": [data_container] })
+        return self.docker.containers.create(stdin_open=True,  image='busybox:latest', command=cmd, user=str(user),
+                                             volumes_from=[data_container], log_config={"Config": {}, "Type": "none"})
 
     def __create_temp_lft_container(self, cmd, data_container=None, user=0):
         bind=lft_transferpath('')
         volumes = ['lft_data']
         if data_container is not None:
             volumes.append(data_container)
-        return self.docker.create_container(stdin_open=True, image='busybox:latest', command=cmd, user=str(user),
-                                            host_config={"LogConfig": {"Config": {}, "Type": "none"},
-                                                         "VolumesFrom": volumes})
+        return self.docker.containers.create(stdin_open=True, image='busybox:latest', command=cmd, user=str(user),
+                                             volumes_from=volumes, log_config={"Config": {}, "Type": "none"})
 
     def __attach(self, container, streamtype):
-        socket = self.docker.attach_socket(container, {streamtype: 1, 'stream': 1})
+        socket = container.attach_socket(params={streamtype: 1, 'stream': 1})
         stream = dockerio.Stream(socket)
         return dockerio.Demuxer(stream)
 
     def __start_container(self, container):
         try:
-            self.docker.start(container)
+            container.start()
         except APIError as e:
             # If any error occurs, kill the remaining container.
             self.__stop_and_remove(container)
@@ -242,9 +240,9 @@ class FileManager(object):
     def __stop_and_remove(self, container, wait=False):
         try:
             if wait:
-                self.docker.wait(container, timeout=5)
+                container.wait(timeout=5)
         except APIError as e:
             # If any error occurs, kill the remaining container.
             self.__stop_and_remove(container)
             raise e
-        self.docker.remove_container(container, False, False, True)
+        container.remove(v=False, link=False, force=True)
