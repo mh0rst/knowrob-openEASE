@@ -32,4 +32,4 @@ MAX_HISTORY_LINES = 100
 MESH_REPOSITORIES = map(lambda x: tuple(x.split(' ')),
                         os.getenv('OPENEASE_MESHES', 'git https://github.com/PR2/pr2_common').split(','))
 
-ROS_DISTRIBUTION = os.getenv('OPENEASE_ROS_DISTRIBUTION', 'indigo')
+ROS_DISTRIBUTION = os.getenv('OPENEASE_ROS_DISTRIBUTION')
