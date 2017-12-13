@@ -64,6 +64,8 @@ class DockerManager(object):
             ])}
             if limit_resources:
                 mem_limit = 256 * 1024 * 1024
+                env.update({'JAVA_OPTS': '-XX:MaxRAM=200m -XX:+UseSerialGC -XX:+TieredCompilation '
+                                         '-XX:TieredStopAtLevel=1'})
 
                 # default is 1024, meaning that 4 of these containers will receive the same cpu time as one default
                 # container. decrease this further if you want to increase the maximum amount of users on the host.
