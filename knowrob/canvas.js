@@ -5,8 +5,8 @@ function KnowrobCanvas(client, options){
     var that = this;
     
     // The canvas object
-    this.rosViewer = new ROS3D.Viewer({
-        divID : options.divID,
+    this.rosViewer = new EASE.Viewer({
+        div : options.divID,
         width : 1920,
         height : 1080,
         antialias : true,
