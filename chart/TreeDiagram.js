@@ -41,7 +41,7 @@ function TreeDiagram(options){
   styleEl.innerHTML = ".d3-tip {line-height: 1;font-weight: bold;padding: 12px;background: rgba(0, 0, 0, 0.8);color: #fff;border-radius: 2px;}.d3-tip:after {box-sizing: border-box;display: inline;font-size: 10px;width: 100%;line-height: 1;color: rgba(0, 0, 0, 0.8);content: \"\25BC\";position: absolute;text-align: center;}.d3-tip.n:after {margin: -1px 0 0 0;top: 100%;left: 0;}";
   document.head.appendChild(styleEl);
 
-  var tip = d3.tip()
+  var tip = d3tip()
   .attr('class', 'd3-tip')
   .offset([-30, 30]) //-10, 0
   .html(function(d) {
