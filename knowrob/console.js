@@ -21,9 +21,7 @@ function PrologConsole(client, options) {
     this.rdf_namespaces = {};
 
     this.init = function () {
-        ace.require("ace/ext/language_tools");
         var userQuery = ace.edit(queryDiv);
-        userQuery.resize(true);
         userQuery.setTheme("ace/theme/solarized_light");
         userQuery.getSession().setMode("ace/mode/prolog");
         userQuery.getSession().setUseWrapMode(true);
@@ -56,6 +54,7 @@ function PrologConsole(client, options) {
             bindKey: {win: 'Down',  mac: 'Down'},
             exec: function(editor) { that.previousHistoryItem(); }
         });
+        userQuery.resize(true);
         
         this.initAutoCompletion();
         
@@ -137,7 +136,7 @@ function PrologConsole(client, options) {
     
     this.initAutoCompletion = function() {
         // Add completer for prolog code
-        ace.require("ace/ext/language_tools").addCompleter({
+        aceLangTools.addCompleter({
             getCompletions: function(editor, session, pos, prefix, callback) {
                 var names = that.queryPredicateNames();
                 if( names ) {

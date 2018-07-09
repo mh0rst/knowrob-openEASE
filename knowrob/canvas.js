@@ -6,16 +6,16 @@ function KnowrobCanvas(client, options){
     
     // The canvas object
     this.rosViewer = new EASE.Viewer({
+        client: client,
         div : options.divID,
         width : 1920,
         height : 1080,
         antialias : true,
         background : options.background || '#ffffff',
         enableShadows: false,
-        near: options.near || 0.01,
-        far: options.far || 1000.0,
-        on_render: client.on_render || options.on_render,
-        on_window_dblclick: options.on_window_dblclick
+        near: options.near || 0.1,
+        far: options.far || 200.0,
+        on_render: client.on_render || options.on_render
     });
     // add some default objects to the scene
     this.rosViewer.scene.add(new ROS3D.Grid());

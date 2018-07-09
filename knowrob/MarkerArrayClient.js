@@ -26,9 +26,6 @@ EASE.MarkerArrayClient = function(options) {
   this.tfClient = options.tfClient;
   this.canvas = options.canvas;
   this.path = options.path || '/';
-  this.on_dblclick = options.on_dblclick || function(_) { };
-  this.on_contextmenu = options.on_contextmenu || function(_) { };
-  this.on_delete = options.on_delete || function(_) { };
 
   // Markers that are displayed (Map ns+id--Marker)
   this.markers = {};
@@ -72,12 +69,12 @@ EASE.MarkerArrayClient.prototype.processMessage = function(arrayMessage){
           message : message,
           path : this.path,
         });
-        newMarker.isSelectable = true;
-        newMarker.isSceneOrtho = false;
+        newMarker.isSelectable = true; // XXX
+        newMarker.isSceneOrtho = false; // XXX
         newMarker.id = message.id;
         newMarker.ns = message.ns;
-        newMarker.frame_id = message.header.frame_id;
-        newMarker.marker_type = message.type;
+        newMarker.frame_id = message.header.frame_id; // XXX
+        newMarker.marker_type = message.type; // XXX
         var newNode = new ROS3D.SceneNode({
           frameID : message.header.frame_id,
           tfClient : this.tfClient,
@@ -85,7 +82,6 @@ EASE.MarkerArrayClient.prototype.processMessage = function(arrayMessage){
         });
         this.markers[markerName] = [newMarker,newNode];
         that.canvas.addMarker(newMarker,newNode);
-        this.addEventListener(newMarker);
       }
     }
     else if(message.action === 1) { // "DEPRECATED"
@@ -96,13 +92,11 @@ EASE.MarkerArrayClient.prototype.processMessage = function(arrayMessage){
       node.unsubscribeTf();
       canvas.removeMarker(marker,node);
       delete that.markers[markerName];
-      that.on_delete(message.ns);
     }
     else if(message.action === 3) { // "DELETE ALL"
         for (var [marker,node] in that.markers){
           node.unsubscribeTf();
           canvas.removeMarker(marker,node);
-          that.on_delete(m.ns);
         }
         that.markers = {};
     }
@@ -119,20 +113,3 @@ EASE.MarkerArrayClient.prototype.unsubscribe = function(){
     this.rosTopic.unsubscribe();
   }
 };
-  
-EASE.MarkerArrayClient.prototype.addEventListener = function(marker){
-  var that = this;
-  var addEventListener = function(child){
-    child.addEventListener('dblclick', function(ev){
-        if(that.lastEvent === ev) return;
-        that.on_dblclick(marker);
-        that.lastEvent = ev;
-    });
-    child.addEventListener('contextmenu', function(ev){
-        if(that.lastEvent === ev) return;
-        that.on_contextmenu(marker);
-        that.lastEvent = ev;
-    });
-  };
-  marker.traverse(addEventListener);
-}

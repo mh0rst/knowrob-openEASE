@@ -51,7 +51,6 @@ function KnowrobClient(options){
     
     // ROS messages
     var tfClient = undefined;
-    this.markerClient = undefined;
     this.markerArrayClient = undefined;
     var designatorClient = undefined;
     var imageClient = undefined;
@@ -61,27 +60,25 @@ function KnowrobClient(options){
     this.nodesRegistered = false;
     
     // Redirects incomming marker messages to currently active canvas.
-    function CanvasProxy(scene) {
+    function CanvasProxy() {
         this.viewer = function() {
-            //if(globalViewer) {
-            //    var w = globalViewer();
-            //    if(w) return w;
-            //}
-            var ui = that.getActiveFrame().ui; if(!ui) return undefined;
-            var v = ui.rosViewer; if(!v) return undefined;
-            return v.rosViewer;
+            var ui = that.getActiveFrame().ui;
+            if(!ui)
+              return undefined;
+            if(!ui.rosViewer)
+              return undefined;
+            return ui.rosViewer.rosViewer;
         };
-        this.add = function(m) {
-            if(this.viewer()) this.viewer()[scene].add(m);
+        this.addMarker = function(marker,node) {
+            if(this.viewer())
+              this.viewer().addMarker(marker,node);
         };
-        this.remove = function(m) {
-            if(this.viewer()) this.viewer()[scene].remove(m);
+        this.removeMarker = function(marker,node) {
+            if(this.viewer())
+              this.viewer().removeMarker(marker,node);
         };
     };
-    this.scene             = new CanvasProxy('scene');
-    this.selectableObjects = new CanvasProxy('selectableObjects');
-    this.backgroundScene   = new CanvasProxy('backgroundScene');
-    this.orthoScene        = new CanvasProxy('orthogonalScene');
+    this.canvas = new CanvasProxy();
     
     this.init = function() {
         // Connect to ROS.
@@ -208,31 +205,13 @@ function KnowrobClient(options){
         fixedFrame : '/my_frame'
       });
 
-      // Setup the marker client.
-      that.markerClient = new ROS3D.MarkerClient({
-        ros : that.ros,
-        tfClient : tfClient,
-        topic : '/visualization_marker',
-        sceneObjects : that.scene,
-        orthogonalObjects : that.orthoScene,
-        selectableObjects : that.selectableObjects,
-        backgroundObjects : that.backgroundScene
-      });
-
       // Setup the marker array client.
-      that.markerArrayClient = new ROS3D.MarkerArrayClient({
+      that.markerArrayClient = new EASE.MarkerArrayClient({
         ros : that.ros,
         tfClient : tfClient,
         topic : '/visualization_marker_array',
-        sceneObjects : that.scene,
-        orthogonalObjects : that.orthoScene,
-        selectableObjects : that.selectableObjects,
-        backgroundObjects : that.backgroundScene,
-        markerClient : that.markerClient,
-        path : meshPath,
-        on_dblclick: options.on_dblclick || that.on_marker_dblclick,
-        on_contextmenu: options.on_contextmenu || that.on_marker_contextmenu,
-        on_delete: options.on_marker_delete || that.on_marker_delete
+        canvas : that.canvas,
+        path : meshPath
       });
 
       // Setup the designator message client.
@@ -246,35 +225,8 @@ function KnowrobClient(options){
           console.warn("Ignoring empty designator.");
         }
         else {
-          /*
-          var designatorHtml = "";
-          if(message.type==0) {
-              designatorHtml += "OBJECT DESIGNATOR";
-          }
-          else if(message.type==1) {
-              designatorHtml += "ACTION DESIGNATOR";
-          }
-          else if(message.type==2) {
-              designatorHtml += "LOCATION DESIGNATOR";
-          }
-          else if(message.type==3) {
-              designatorHtml += "HUMAN DESIGNATOR";
-          }
-          else {
-              designatorHtml += "DESIGNATOR";
-          }
-          */
           var desig_js = parse_designator(message.description);
-          var html = undefined;
-          if(desig_js.type) {
-            if(desig_js.type=='ADT') {
-              html = format_adt_designator(that.getActiveFrame().ui, desig_js);
-            }
-          }
-          if(!html) {
-            html = format_designator(message.description);
-          }
-          // TODO: send to all?
+          var html = format_designator(message.description);
           if(that.getActiveFrame().on_designator_received)
             that.getActiveFrame().on_designator_received(html);
         }
@@ -320,10 +272,35 @@ function KnowrobClient(options){
               console.warn("Unknown data format on /logged_images topic: " + message.data);
           }
           if(html.length>0 && that.getActiveFrame().on_image_received) {
-              // TODO: send to all?
               that.getActiveFrame().on_image_received(html, imageWidth, imageHeight);
           }
       });
+      
+      // TODO redo highlighting with dedicated messages
+//       var highlightClient = new ROSLIB.Topic({
+//         ros : that.ros,
+//         name : '/ease/canvas/highlight',
+//         messageType : 'std_msgs/String'
+//       });
+//       highlightClient.subscribe(function(message) {
+//         var objectId = message.data;
+//         console.info(objectId);
+//         if(objectId == '*') {
+//         } else {
+//         }
+//       });
+//       var unhighlightClient = new ROSLIB.Topic({
+//         ros : that.ros,
+//         name : '/ease/canvas/unhighlight',
+//         messageType : 'std_msgs/String'
+//       });
+//       highlightClient.subscribe(function(message) {
+//         var objectId = message.data;
+//         console.info(objectId);
+//         if(objectId == '*') {
+//         } else {
+//         }
+//       });
 
       cameraPoseClient = new ROSLIB.Topic({
         ros : that.ros,
@@ -331,7 +308,6 @@ function KnowrobClient(options){
         messageType : 'geometry_msgs/Pose'
       });
       cameraPoseClient.subscribe(function(message) {
-          // TODO: send to all?
           if(that.getActiveFrame().on_camera_pose_received)
             that.getActiveFrame().on_camera_pose_received(message);
       });
@@ -374,10 +350,11 @@ function KnowrobClient(options){
     this.newCanvas = function(options) {
         var x = new KnowrobCanvas(that, options);
         // connect to render event, dispatch to marker clients
-        x.rosViewer.on('render', function(e) {
-            if(that.markerClient)      that.markerClient.emit('render', e);
-            if(that.markerArrayClient) that.markerArrayClient.emit('render', e);
-        });
+		// FIXME TypeError: x.rosViewer.on is not a function
+        //x.rosViewer.on('render', function(e) {
+        //    if(that.markerClient)      that.markerClient.emit('render', e);
+        //    if(that.markerArrayClient) that.markerArrayClient.emit('render', e);
+        //});
         return x;
     };
     
@@ -390,23 +367,44 @@ function KnowrobClient(options){
     };
     
     this.selectMarker = function(marker) {
-        if(that.selectedMarker == marker.ns) return;
-        
-        if(that.selectedMarker) that.unselectMarker(that.selectedMarker);
-        that.selectedMarker = marker.ns;
-        
-        var prolog = new JsonProlog(that.ros, {});
-        prolog.jsonQuery("term_to_atom("+marker.ns+",MarkerName), "+
-            "marker_highlight(MarkerName), ignore(marker_publish).",
-            function(result) { prolog.finishClient(); });
+        if(that.selectedMarker == marker)
+          return;
+        if(that.selectedMarker) {
+          if(that.canvas.viewer()) {
+            that.canvas.viewer().unhighlight(that.selectedMarker);
+          }
+        }
+        that.selectedMarker = marker;
+        // inform the active iframe about selection (e.g., to show object query library)
+        if(that.getActiveFrame())
+          that.getActiveFrame().selectMarker(marker);
+        // tell the webgl canvas to highlight the selected object
+        if(that.canvas.viewer())
+          that.canvas.viewer().highlight(marker);
     };
     
     this.unselectMarker = function() {
-        var prolog = new JsonProlog(that.ros, {});
-        prolog.jsonQuery("term_to_atom("+that.selectedMarker+",MarkerName), "+
-            "marker_highlight_remove(MarkerName), ignore(marker_publish).",
-            function(result) { prolog.finishClient(); });
-        that.selectedMarker = undefined;
+      if(!that.selectedMarker)
+        return;
+      if(that.getActiveFrame() && that.getActiveFrame().unselectMarker)
+        that.getActiveFrame().unselectMarker(that.selectedMarker);
+      // tell the webgl canvas to unhighlight the object
+      if(that.canvas.viewer())
+        that.canvas.viewer().unhighlight(that.selectedMarker);
+      that.selectedMarker = undefined;
+    };
+    
+    this.removeMarker = function(marker) {
+        if(marker === that.selectedMarker) {
+            that.unselectMarker();
+        }
+        if(that.getActiveFrame() && that.getActiveFrame().removeMarker)
+            that.getActiveFrame().removeMarker(marker);
+    };
+    
+    this.showMarkerMenu = function(marker) {
+        if(that.getActiveFrame() && that.getActiveFrame().showMarkerMenu)
+          that.getActiveFrame().showMarkerMenu(marker);
     };
     
     this.on_render = function(camera,scene) {
@@ -420,25 +418,6 @@ function KnowrobClient(options){
             render_event.camera = camera;
             sprites[index].dispatchEvent(render_event);
         }
-    };
-    
-    this.on_marker_dblclick = function(marker) {
-        that.selectMarker(marker);
-        if(that.getActiveFrame())
-            that.getActiveFrame().on_marker_dblclick(marker);
-    };
-    
-    this.on_marker_delete = function(ns) {
-        if(that.getActiveFrame())
-            that.getActiveFrame().on_marker_delete(ns);
-        if(ns === that.selectedMarker) {
-            that.unselectMarker();
-        }
-    };
-    
-    this.on_marker_contextmenu = function(marker) {
-        if(that.getActiveFrame())
-            that.getActiveFrame().on_marker_contextmenu(marker);
     };
     
     ///////////////////////////////
