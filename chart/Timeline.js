@@ -12,7 +12,6 @@ function Timeline (options) {
   var where = options.where;
   var label = options.label;
   var fontsize = options.fontsize || "12px";
-  this.ros = options.ros || false;
   this.label = options.label;
 
   var chart;
@@ -48,20 +47,8 @@ function Timeline (options) {
 
       
       google.visualization.events.addListener(chart, 'select', function(){
-        var selection = chart.getSelection();
-        var prolog = new JsonProlog(that.ros, {});
-        for (var i = 0; i < selection.length; i++) {
-         var query = "remove_task_tree, !, visualize_task_tree_in_timeline('http://knowrob.org/kb/cram_log.owl#timepoint_" + (dataTable.getValue(selection[i].row, 1) / 1000.0)  +
-                                                                       "', 'http://knowrob.org/kb/cram_log.owl#timepoint_" + (dataTable.getValue(selection[i].row, 2) / 1000.0)  + 
-                                                                       "', '" + dataTable.getValue(selection[i].row, 0) + "' ).";
-         console.log(query);
-         prolog.jsonQuery(query,
-          function(result) 
-          { 
-            prolog.finishClient(); 
-          });	     
-         }
-     });
+        // TODO: notify someone that action was selected
+      });
      
      chart.draw(view);
   }
