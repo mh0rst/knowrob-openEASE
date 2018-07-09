@@ -1,3 +1,0 @@
-[submodule "ros"]
-	path = ros
-	url = https://github.com/code-iai/ros3djs.git
