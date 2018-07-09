@@ -1,3 +1,0 @@
-[submodule "flask/webrob/static/lib"]
-	path = flask/webrob/static/lib
-	url = https://github.com/code-iai/knowrob_webtools.git
