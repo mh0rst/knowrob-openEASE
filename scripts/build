@@ -46,7 +46,7 @@ function build() {
 }
 
 if [[ -z "$OPENEASE_ROS_DISTRIBUTION" ]]; then
-       echo "No ros distribution given as the environment variable, building hydro as default"
+       echo "No ros distribution given as the environment variable, building indigo as default"
 fi
 
 if [ "${BUILDOPTS["all"]}" == true ] || [ "${BUILDOPTS["knowrob"]}" == true ]; then
