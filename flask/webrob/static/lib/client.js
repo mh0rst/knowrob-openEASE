@@ -85,9 +85,7 @@ function KnowrobClient(options){
         that.connect();
         
         that.episode = new KnowrobEpisode(that);
-        if(options.category && options.episode)
-            that.episode.setEpisode(options.category, options.episode);
-        
+
         that.createOverlay();
         
         if(requireEpisode && !that.episode.hasEpisode()) {
@@ -110,6 +108,12 @@ function KnowrobClient(options){
         });
     };
 
+    function onRosConnected() {
+        that.registerNodes();
+        if(options.category && options.episode)
+            that.episode.setEpisode(options.category, options.episode);
+    }
+
     this.connect = function () {
       if(that.ros) return;
       that.ros = new ROSLIB.Ros({url : rosURL});
@@ -118,11 +122,11 @@ function KnowrobClient(options){
           console.log('Connected to websocket server.');
           if (authentication) {
               // Acquire auth token for current user and authenticate, then call registerNodes
-              that.authenticate(authURL, that.registerNodes);
+              that.authenticate(authURL, onRosConnected);
           } else {
               // No authentication requested, call registerNodes directly
-              that.registerNodes();
               that.waitForJsonProlog();
+              onRosConnected();
           }
       });
       that.ros.on('close', function() {

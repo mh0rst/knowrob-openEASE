@@ -6,12 +6,21 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 # Default options
 DNS="8.8.8.8" # google DNS
 
+DEFAULT_OPENEASE_ROS_DISTRIBUTION=indigo
+
+DEFAULT_KNOWROB_WEB_PORT=5000
+
+
 for i in "$@"
 do
 case $i in
     -d=*|--dns=*)
     DNS="${i#*=}"
     shift # past argument=value
+    ;;
+    debug)
+    echo "openEASE debugging active! Do not use on exposed or production systems!"
+    EASE_DEBUG=true
     ;;
     *)
             # unknown option
@@ -49,12 +58,15 @@ function stopContainer {
 
 if [ -z "$KNOWROB_WEB_PORT" ]
 then
-   export KNOWROB_WEB_PORT=5000
+   KNOWROB_WEB_PORT=$DEFAULT_KNOWROB_WEB_PORT
 fi
 
-if [ "$1" == "debug" ]; then
-  EASE_DEBUG=true
-else
+if [ -z "$OPENEASE_ROS_DISTRIBUTION" ]
+then
+   OPENEASE_ROS_DISTRIBUTION=$DEFAULT_OPENEASE_ROS_DISTRIBUTION
+fi
+
+if [ -z "$EASE_DEBUG" ]; then
   EASE_DEBUG=false
 fi
 

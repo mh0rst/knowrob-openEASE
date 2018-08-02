@@ -17,6 +17,8 @@ RUN git clone --recursive https://github.com/knowrob/knowrob.git -b kinetic && \
     git clone https://github.com/andreihaidu/knowrob_robcog.git
 
 WORKDIR /home/ros
+# Workaround for somehow missing java tf msg generation for knowrob_beliefstate and tf2_web_republisher
+RUN /opt/ros/kinetic/bin/genjava_message_artifacts -p tf actionlib
 # Build the catkin workspace
 RUN /opt/ros/kinetic/bin/catkin_make
 

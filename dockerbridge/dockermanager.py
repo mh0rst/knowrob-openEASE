@@ -17,11 +17,11 @@ class DockerManager(object):
     application_images = None
 
     def __init__(self):
-        self.__client = docker.Client(base_url='unix://var/run/docker.sock', version='1.18', timeout=60)
+        self.__client = docker.from_env(version='1.18', timeout=60)
 
     def start_common_container(self):
         try:
-            self.__start_common_container__(self.__client.containers(all=True))
+            self.__start_common_container__(self.__client.containers.list(all=True))
         except (APIError, DockerException), e:
             sysout("Error in start_common_container: " + str(e.message))
             traceback.print_exc()
@@ -29,22 +29,23 @@ class DockerManager(object):
     def __start_common_container__(self, all_containers):
         if self.__get_container("mongo_data", all_containers) is None:
             sysout("Creating mongo data container.")
-            self.__client.create_container('busybox', detach=True, name='mongo_data', volumes=['/data/db'],
-                                           entrypoint='true')
+            self.__client.containers.create('busybox', detach=True, name='mongo_data', volumes=['/data/db'],
+                                            entrypoint='true')
 
         if self.__get_container("lft_data", all_containers) is None:
             sysout("Creating large file transfer data container.")
-            self.__client.create_container('busybox', detach=True, name='lft_data',
-                                           volumes=['/tmp/openEASE/dockerbridge'], entrypoint='true')
+            self.__client.containers.create('busybox', detach=True, name='lft_data',
+                                            volumes=['/tmp/openEASE/dockerbridge'], entrypoint='true')
 
         if self.__get_container("mongo_db", all_containers) is None:
             sysout("Creating mongo container.")
-            self.__client.create_container('mongo', detach=True, name='mongo_db')
-            self.__client.start('mongo', volumes_from=['mongo_data'])
+            mongocontainer = self.__client.containers.create('mongo', detach=True, name='mongo_db',
+                                                             volumes_from=['mongo_data'])
+            mongocontainer.start()
 
     def start_user_container(self, application_image, user_container_name, ros_distribution, limit_resources=True):
         try:
-            all_containers = self.__client.containers(all=True)
+            all_containers = self.__client.containers.list(all=True)
             # Make sure common containers are up and running
             self.__start_common_container__(all_containers)
             # Stop user container if running
@@ -63,6 +64,8 @@ class DockerManager(object):
             ])}
             if limit_resources:
                 mem_limit = 256 * 1024 * 1024
+                env.update({'JAVA_OPTS': '-XX:MaxRAM=200m -XX:+UseSerialGC -XX:+TieredCompilation '
+                                         '-XX:TieredStopAtLevel=1'})
 
                 # default is 1024, meaning that 4 of these containers will receive the same cpu time as one default
                 # container. decrease this further if you want to increase the maximum amount of users on the host.
@@ -70,36 +73,39 @@ class DockerManager(object):
             else:
                 mem_limit = 0
                 cpu_shares = 1024  # Default value
-            self.__client.create_container(application_image, detach=True, tty=True, environment=env,
-                                           name=user_container_name, mem_limit=mem_limit, cpu_shares=cpu_shares,
-                                           memswap_limit=mem_limit*4,
-                                           entrypoint=['/opt/ros/'+ros_distribution+'/bin/roslaunch', 'knowrob_roslog_launch', 'knowrob_ease.launch'])
-                
+
             # Read links and volumes from webapp_container ENV
-            inspect = self.__client.inspect_image(application_image)
-            env = dict(map(lambda x: x.split("="), inspect['Config']['Env']))
+            inspect = self.__client.images.get(application_image)
+            env.update(dict(map(lambda x: x.split("="), inspect.attrs['Config']['Env'])))
             links = map(lambda x: tuple(x.split(':')), env['DOCKER_LINKS'].split(' '))
+
             volumes = env['DOCKER_VOLUMES'].split(' ')
             volumes.append(data_container_name(user_container_name))
 
+            usercontainer = self.__client.containers.create(application_image, detach=True, tty=True, environment=env,
+                                                            name=user_container_name, mem_limit=mem_limit,
+                                                            cpu_shares=cpu_shares, memswap_limit=mem_limit*4,
+                                                            entrypoint=['/opt/ros/'+ros_distribution+'/bin/roslaunch',
+                                                                        'knowrob_roslog_launch', 'knowrob_ease.launch'],
+                                                            ports={9090: ('127.0.0.1',)}, links=links,
+                                                            volumes_from=volumes)
+
             sysout("Starting user container " + user_container_name)
-            self.__client.start(user_container_name,
-                                port_bindings={9090: ('127.0.0.1',)},
-                                links=links,
-                                volumes_from=volumes)
+            usercontainer.start()
         except Exception, e:
             sysout("Error in start_user_container: " + str(e.message))
             traceback.print_exc()
 
     def create_user_data_container(self, container_name):
         try:
-            all_containers = self.__client.containers(all=True)
             user_data_container = data_container_name(container_name)
+            all_containers = self.__client.containers.list(all=True, filters={'name': user_data_container})
             if self.__get_container(user_data_container, all_containers) is None:
                 sysout("Creating "+user_data_container+" container.")
-                self.__client.create_container('knowrob/user_data', detach=True, tty=True, name=user_data_container,
-                                               volumes=['/etc/rosauth'], entrypoint='true')
-                self.__client.start(user_data_container)
+                userdatacontainer = self.__client.containers.create('knowrob/user_data', detach=True, tty=True,
+                                                                    name=user_data_container, volumes=['/etc/rosauth'],
+                                                                    entrypoint='true')
+                userdatacontainer.start()
                 return True
         except (APIError, DockerException), e:
             sysout("Error in create_user_data_container: " + str(e.message))
@@ -108,7 +114,7 @@ class DockerManager(object):
 
     def start_webapp_container(self, webapp_image):
         try:
-            all_containers = self.__client.containers(all=True)
+            all_containers = self.__client.containers.list(all=True)
             # Make sure common containers are up and running
             self.__start_common_container__(all_containers)
             container_name = webapp_image.split('/')[1]
@@ -119,11 +125,7 @@ class DockerManager(object):
                        "VIRTUAL_PORT": '5000',
                        "OPEN_EASE_WEBAPP": 'true',
                        "EASE_DEBUG": os.environ['EASE_DEBUG']}
-                self.__client.create_container(webapp_image,
-                                               detach=True, tty=True, stdin_open=True,
-                                               environment=env,
-                                               name=container_name)
-                
+
                 # Read links and volumes from webapp_image ENV
                 inspect = self.__client.inspect_image(webapp_image)
                 img_env = dict(map(lambda x: x.split("="), inspect['Config']['Env']))
@@ -131,35 +133,39 @@ class DockerManager(object):
                 volumes = img_env['DOCKER_VOLUMES'].split(' ')
                 volumes.append('ease_secret:ro')
                 volumes.append('lft_data')
+
+                webappcontainer = self.__client.containers.create(webapp_image, detach=True, tty=True, stdin_open=True,
+                                                                  environment=env, name=container_name,
+                                                                  ports={5000: ('127.0.0.1',)}, links=links,
+                                                                  volumes_from=volumes)
                 
                 sysout("Running webapp container " + container_name)
-                self.__client.start(container_name,
-                                    port_bindings={5000: ('127.0.0.1',)},
-                                    links=links,
-                                    volumes_from=volumes)
+                webappcontainer.start()
         except Exception, e:
             sysout("Error in start_webapp_container: " + str(e.message))
             traceback.print_exc()
 
     def stop_container(self, container_name):
         try:
-            self.__stop_container__(container_name, self.__client.containers(all=True))
+            self.__stop_container__(container_name, self.__client.containers.list(all=True,
+                                                                                  filters={'name': container_name}))
         except (APIError, DockerException), e:
             sysout("Error in stop_container: " + str(e.message))
 
     def __stop_container__(self, container_name, all_containers):
         # check if containers exist:
-        if self.__get_container(container_name, all_containers) is not None:
+        usercontainer = self.__get_container(container_name, all_containers)
+        if usercontainer is not None:
             sysout("Stopping container " + container_name + "...")
-            self.__client.stop(container_name, timeout=5)
+            usercontainer.stop(timeout=5)
 
             sysout("Removing container " + container_name + "...")
-            self.__client.remove_container(container_name)
+            usercontainer.remove()
 
     def get_container_ip(self, container_name):
         try:
-            inspect = self.__client.inspect_container(container_name)
-            return inspect['NetworkSettings']['IPAddress']
+            inspect = self.__client.containers.get(container_name)
+            return inspect.attrs['NetworkSettings']['IPAddress']
         except (APIError, DockerException), e:
             sysout("Error in get_container_ip: " + str(e.message) + "\n")
             return 'error'
@@ -170,10 +176,9 @@ class DockerManager(object):
         self.application_images = []
         
         try:
-            all_images = self.__client.images(all=True)
+            all_images = self.__client.images.list(all=True)
             for img in self.get_named_images(all_images):
-                inspect = self.__client.inspect_image(img)
-                env = dict(map(lambda x: x.split("="), inspect['Config']['Env']))
+                env = dict(map(lambda x: x.split("="), img.attrs['Config']['Env']))
                 if 'OPEN_EASE_APPLICATION' in env:
                     sysout("OPEN_EASE_APPLICATION: " + str(img) + "\n")
                     self.application_images.append(img)
@@ -192,9 +197,8 @@ class DockerManager(object):
             all_images = self.__client.images(all=True)
             for img in self.get_named_images(all_images):
                 if img in ['openease/easeapp', 'openease/login']: continue
-                    
-                inspect = self.__client.inspect_image(img)
-                env = dict(map(lambda x: x.split("="), inspect['Config']['Env']))
+
+                env = dict(map(lambda x: x.split("="), img.attrs['Config']['Env']))
                 if 'OPEN_EASE_WEBAPP' in env:
                     sysout("OPEN_EASE_WEBAPP: " + str(img) + "\n")
                     self.webapp_images.append(img)
@@ -207,7 +211,7 @@ class DockerManager(object):
     def get_named_images(self, all_images):
         named_images = []
         for img in all_images:
-            tags = img['RepoTags']
+            tags = img.attrs['RepoTags']
             if len(tags)==0: continue
             tag0 = tags[0]
             if tag0 == '<none>:<none>': continue
@@ -216,7 +220,7 @@ class DockerManager(object):
 
     def get_container_env(self, container_name, key):
         try:
-            inspect = self.__client.inspect_container(container_name)
+            inspect = self.__client.containers.get(container_name).attrs
             env_list = inspect['Config']['Env']
             # Map to list of key-value pairs and convert to dict
             env = dict(map(lambda x: x.split("="), env_list))
@@ -227,7 +231,8 @@ class DockerManager(object):
     
     def get_container_log(self, container_name):
         try:
-            logger = self.__client.logs(container_name, stdout=True, stderr=True, stream=False, timestamps=False)
+            logger = self.__client.containers.get(container_name).logs(stdout=True, stderr=True, stream=False,
+                                                                       timestamps=False)
             logstr = ""
             # TODO: limit number of lines!
             # It seems for a long living container the log gets to huge.
@@ -240,12 +245,11 @@ class DockerManager(object):
 
     def container_started(self, container_name, base_image_name=None):
         try:
-            cont = self.__get_container(container_name, self.__client.containers())
+            cont = self.__get_container(container_name, self.__client.containers.list(filters={'name': container_name}))
             if base_image_name is None or cont is None:
                 return cont is not None
-            
-            inspect = self.__client.inspect_container(container_name)
-            image = inspect['Config']['Image']
+
+            image = cont.attrs['Config']['Image']
             
             return image == base_image_name
         
@@ -256,6 +260,6 @@ class DockerManager(object):
     @staticmethod
     def __get_container(container_name, all_containers):
         for cont in all_containers:
-            if cont['Names'] != None and "/" + container_name in cont['Names']:
+            if container_name == cont.name:
                 return cont
         return None
