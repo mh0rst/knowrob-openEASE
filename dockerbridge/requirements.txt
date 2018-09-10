@@ -1,2 +1,2 @@
 python-jsonrpc
-docker
+docker<=2.7.0
