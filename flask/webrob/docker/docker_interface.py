@@ -11,8 +11,7 @@ from webrob.app_and_db import app
 from webrob.utility import random_string
 
 
-client = pyjsonrpc.HttpClient(url="http://"+os.environ['DOCKERBRIDGE_PORT_5001_TCP_ADDR'] + ':'
-                              + os.environ['DOCKERBRIDGE_PORT_5001_TCP_PORT'])
+client = pyjsonrpc.HttpClient(url="http://dockerbridge:5001")
 
 
 def generate_mac(user_container_name, client_name, dest, rand, t, level, end, cache=False):
