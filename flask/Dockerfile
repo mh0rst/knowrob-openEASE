@@ -2,12 +2,13 @@ FROM ubuntu:16.04
 MAINTAINER Daniel Beßler, danielb@cs.uni-bremen.de
 
 # install python and flask
-RUN apt-get -qq update
-RUN DEBIAN_FRONTEND=noninteractive apt-get -qq install -y -q curl python-all python-pip python-dev wget gcc imagemagick mongodb libffi-dev libpq-dev
-RUN DEBIAN_FRONTEND=noninteractive apt-get -qq install -y -q subversion git
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get -qq install -y -q python-tornado
-RUN DEBIAN_FRONTEND=noninteractive apt-get -qq install -y -q nodejs nodejs-legacy npm
+RUN DEBIAN_FRONTEND=noninteractive apt-get -qq update &&\
+    DEBIAN_FRONTEND=noninteractive\
+    apt-get -qq install -y -q curl python-all python-pip python-dev wget gcc imagemagick mongodb libffi-dev libpq-dev netcat\
+                              subversion git\
+                              python-tornado\
+                              nodejs nodejs-legacy npm &&\
+    rm -rf /var/lib/apt/lists/*
 
 ADD requirements.txt /tmp/webapp_requirements.txt
 RUN pip install -r /tmp/webapp_requirements.txt
