@@ -33,6 +33,8 @@ function KnowrobClient(options){
     this.isConnected = false;
     // true iff json_prolog is connected
     this.isPrologConnected = false;
+    // true if authentication was sent to the connection
+    this.isAuthenticated = false;
     // true iff registerNodes was called before
     this.isRegistered = false;
     // Prefix for mesh GET URL's
@@ -137,6 +139,7 @@ function KnowrobClient(options){
           console.log('Connection was closed.');
           that.showPageOverlay("Connection was closed, reconnecting...");
           that.ros = undefined;
+          that.isAuthenticated = false;
           that.isRegistered = false;
           setTimeout(that.connect, 500);
       });
@@ -145,6 +148,7 @@ function KnowrobClient(options){
           that.showPageOverlay("Connection error, reconnecting...");
           if(that.ros) that.ros.close();
           that.ros = undefined;
+          that.isAuthenticated = false;
           that.isRegistered = false;
           setTimeout(that.connect, 500);
       });
@@ -163,6 +167,10 @@ function KnowrobClient(options){
                 console.warn("Lost connection to ROS master.");
                 return;
             }
+            if(that.isAuthenticated) {
+                console.log("Already authenticated from previous request");
+                return;
+            }
             console.log("Sending auth token");
             that.ros.authenticate(request.mac,
                              request.client,
@@ -171,6 +179,7 @@ function KnowrobClient(options){
                              request.t,
                              request.level,
                              request.end);
+            that.isAuthenticated = true;
             that.waitForJsonProlog();
             
             // If a callback function was specified, call it in the context of Knowrob class (that)
