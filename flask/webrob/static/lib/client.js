@@ -81,18 +81,21 @@ function KnowrobClient(options){
     this.canvas = new CanvasProxy();
     
     this.init = function() {
-        // Connect to ROS.
-        that.connect();
-        
         that.episode = new KnowrobEpisode(that);
 
-        that.createOverlay();
-        
-        if(requireEpisode && !that.episode.hasEpisode()) {
-          that.showPageOverlay("Please select an Episode");
-        } else {
-          that.showPageOverlay("Loading Knowledge Base");
-        }
+        // Connect to ROS.
+        that.connect(function () {
+            if(options.category && options.episode)
+                that.episode.setEpisode(options.category, options.episode);
+
+            that.createOverlay();
+
+            if(requireEpisode && !that.episode.hasEpisode()) {
+              that.showPageOverlay("Please select an Episode");
+            } else {
+              that.showPageOverlay("Loading Knowledge Base");
+            }
+        });
       
         setInterval(containerRefresh, 570000);
         containerRefresh();
@@ -108,13 +111,14 @@ function KnowrobClient(options){
         });
     };
 
-    function onRosConnected() {
+    this.onRosConnected = function (postConnect) {
+        if(postConnect) {
+            postConnect();
+        }
         that.registerNodes();
-        if(options.category && options.episode)
-            that.episode.setEpisode(options.category, options.episode);
     }
 
-    this.connect = function () {
+    this.connect = function (postConnect) {
       if(that.ros) return;
       that.ros = new ROSLIB.Ros({url : rosURL});
       that.ros.on('connection', function() {
@@ -122,11 +126,11 @@ function KnowrobClient(options){
           console.log('Connected to websocket server.');
           if (authentication) {
               // Acquire auth token for current user and authenticate, then call registerNodes
-              that.authenticate(authURL, onRosConnected);
+              that.authenticate(authURL, that.onRosConnected.bind(undefined, postConnect));
           } else {
               // No authentication requested, call registerNodes directly
               that.waitForJsonProlog();
-              onRosConnected();
+              that.onRosConnected(postConnect);
           }
       });
       that.ros.on('close', function() {
