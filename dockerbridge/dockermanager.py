@@ -63,8 +63,8 @@ class DockerManager(object):
                        user_home_dir
             ])}
             if limit_resources:
-                mem_limit = 512 * 1024 * 1024
-                env.update({'JAVA_OPTS': '-XX:MaxRAM=400m -XX:+UseSerialGC -XX:+TieredCompilation '
+                mem_limit = 1024 * 1024 * 1024
+                env.update({'JAVA_OPTS': '-XX:MaxRAM=750m -XX:+UseSerialGC -XX:+TieredCompilation '
                                          '-XX:TieredStopAtLevel=1'})
 
                 # default is 1024, meaning that 4 of these containers will receive the same cpu time as one default
