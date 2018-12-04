@@ -110,8 +110,8 @@ function KnowrobClient(options){
 
     function onRosConnected() {
         that.registerNodes();
-        if(that.options.category && that.options.episode)
-            that.episode.setEpisode(that.options.category, that.options.episode);
+        if(options.category && options.episode)
+            that.episode.setEpisode(options.category, options.episode);
     }
 
     this.connect = function () {

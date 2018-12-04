@@ -7,7 +7,7 @@ WORKDIR /home/ros/src
 RUN /usr/bin/python /opt/ros/kinetic/bin/catkin_init_workspace
 
 RUN echo "Cloning repositories..."
-RUN git clone --recursive https://github.com/knowrob/knowrob.git -b kinetic && \
+RUN git clone --recursive https://github.com/mh0rst/knowrob.git -b kinetic && \
     git clone --recursive https://github.com/knowrob/knowrob_addons.git -b kinetic && \
     git clone https://github.com/code-iai/iai_maps.git && \
     git clone https://github.com/code-iai/iai_common_msgs.git && \
@@ -17,8 +17,6 @@ RUN git clone --recursive https://github.com/knowrob/knowrob.git -b kinetic && \
     git clone https://github.com/andreihaidu/knowrob_robcog.git
 
 WORKDIR /home/ros
-# Workaround for somehow missing java tf msg generation for knowrob_beliefstate and tf2_web_republisher
-RUN /opt/ros/kinetic/bin/genjava_message_artifacts -p tf actionlib
 # Build the catkin workspace
 RUN /opt/ros/kinetic/bin/catkin_make
 
