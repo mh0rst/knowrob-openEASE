@@ -28,7 +28,8 @@
   
   <script type="text/javascript" src="{{ url_for('static', filename='lib/canvas.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='lib/console.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/client.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='lib/framecontrol.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='lib/webclient.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='lib/episode.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='lib/menu.js') }}"></script>
   
@@ -63,25 +64,27 @@
     var auth = '{{ authentication }}';
     var wsproto = 'ws' + (location.protocol === 'https:'?'s':'');
     var rosUrl = wsproto + '://{{ host_url }}/ws/{{ container_name }}/';
+    var frameControl = new FrameControl({
+            menu: menu,
+            user_interfaces: OPENEASE_USER_IFACES,
+            user_interfaces_flat: OPENEASE_USER_IFACES_FLAT
+    });
     var client = new KnowrobClient({
-            flask_user: flask_user,
+            frameControl: frameControl,
             ros_url: rosUrl,
             authentication: auth,
             auth_url: '/api/v1.0/auth_by_session',
             meshPath: '/meshes/',
             category: '{{ category }}',
             episode: '{{ exp }}',
-            user_interfaces: OPENEASE_USER_IFACES,
-            user_interfaces_flat: OPENEASE_USER_IFACES_FLAT,
-            menu: menu,
             require_episode: true,
             use_console_overlay: true
         });
     
     $(document).ready(function () {
         client.init();
-        $(window).load(client.updateLocation);
-        $(window).bind('hashchange', client.updateLocation);
+        $(window).load(frameControl.updateLocation);
+        $(window).bind('hashchange', frameControl.updateLocation);
     });
   </script>
   
