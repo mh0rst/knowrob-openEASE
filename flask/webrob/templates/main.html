@@ -25,7 +25,8 @@
   
   <script type="text/javascript" src="{{ url_for('static', filename='lib/ros/JSONProlog.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='lib/ros/MarkerArrayClient.js') }}"></script>
-  
+
+  <script type="text/javascript" src="{{ url_for('static', filename='lib/controller.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='lib/canvas.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='lib/console.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='lib/framecontrol.js') }}"></script>
@@ -64,6 +65,7 @@
     var auth = '{{ authentication }}';
     var wsproto = 'ws' + (location.protocol === 'https:'?'s':'');
     var rosUrl = wsproto + '://{{ host_url }}/ws/{{ container_name }}/';
+    var controller = new OpenEASEController();
     var frameControl = new FrameControl({
             menu: menu,
             user_interfaces: OPENEASE_USER_IFACES,
@@ -80,7 +82,7 @@
             require_episode: true,
             use_console_overlay: true
         });
-    
+    controller.registerClient(client);
     $(document).ready(function () {
         client.init();
         $(window).load(frameControl.updateLocation);

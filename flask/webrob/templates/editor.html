@@ -178,9 +178,7 @@
         // FIXME(daniel): JPL crashes when `make` is called and files changed
         //var consultCmd = "((ros_package_initialized('"+pkg+"'), make) ; register_ros_package('"+pkg+"')).";
         var consultCmd = "register_ros_package('"+pkg+"')";
-        var pl = parent.client.newProlog();
-        // Assert package in prolog
-        pl.jsonQuery(consultCmd, function(x) {
+        var pl = parent.controller.executeProlog(consultCmd, function(x) {
             if(x.status && x.status=='OK') {
                 alert("User package consulted.");
             }
@@ -191,7 +189,6 @@
                 else
                     alert("Failed to consult this package.");
             }
-            pl.finishClient();
         });
     };
     
