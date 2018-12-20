@@ -62,14 +62,20 @@
 
 {% block content %}
   <script type="text/javascript">
+
+    var WEBCLIENT_USER_IFACES = [
+        { id: 'cog', name: 'Cognitive Capabilities', interfaces: [
+          { id: 'kb', name: 'Question Answering', src:'/knowrob' },
+          { id: 'replay', name: 'Episode Replay', src:'/video' }
+        ]}
+    ];
     var auth = '{{ authentication }}';
     var wsproto = 'ws' + (location.protocol === 'https:'?'s':'');
     var rosUrl = wsproto + '://{{ host_url }}/ws/{{ container_name }}/';
     var controller = new OpenEASEController();
     var frameControl = new FrameControl({
             menu: menu,
-            user_interfaces: OPENEASE_USER_IFACES,
-            user_interfaces_flat: OPENEASE_USER_IFACES_FLAT
+            common_user_interfaces: COMMON_OPENEASE_USER_IFACES
     });
     var client = new KnowrobClient({
             frameControl: frameControl,
@@ -84,27 +90,14 @@
         });
     controller.registerClient(client);
     $(document).ready(function () {
+        menu.update_webclient_interfaces(WEBCLIENT_USER_IFACES);
         client.init();
+        frameControl.init();
+        frameControl.update_webclient_frames(WEBCLIENT_USER_IFACES);
         $(window).load(frameControl.updateLocation);
         $(window).bind('hashchange', frameControl.updateLocation);
     });
   </script>
   
   <div class="page" id="page" />
-  <script type="text/javascript">
-    // Declare page frames: Each user interface of openEASE is
-    // put into an iframe that is child of #page
-    for(var i in OPENEASE_USER_IFACES) {
-        var elem = OPENEASE_USER_IFACES[i];
-        var frame = document.createElement("iframe");
-        frame.id = elem.id+'-frame';
-        frame.className = 'content-frame';
-        if(elem.interfaces && elem.interfaces[0].src)
-            frame.src = elem.interfaces[0].src;
-        else if(elem.src)
-            frame.src = elem.src;
-        else continue;
-        document.getElementById('page').appendChild(frame);
-    };
-  </script>
 {% endblock %}
