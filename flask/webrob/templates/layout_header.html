@@ -27,12 +27,7 @@
   <script type="text/javascript" src="{{ url_for('static', filename='lib/utility.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='lib/menu.js') }}"></script>
   <script type="text/javascript">
-    var COMMON_OPENEASE_USER_IFACES = [
-        { id: 'teach', name: 'Teaching', interfaces: [
-          //{ id: 'exercises', name: 'Exercises', src:'/teaching' },
-          { id: 'tutorials', name: 'Tutorials', src:'/tutorials' }
-        ]}
-    ];
+    var COMMON_OPENEASE_USER_IFACES = [];
 
     if ('{{ current_user.is_authenticated }}' == 'True')
     {
@@ -62,7 +57,20 @@
     };
     var flask_user = new FlaskUser();
     var menu = new KnowrobMenu(flask_user, COMMON_OPENEASE_USER_IFACES);
-    $(document).ready(menu.updateMenu);
+
+    var webclientDescription = {
+        interfaces: [
+            { id: 'cog', name: 'Cognitive Capabilities', interfaces: [
+              { id: 'kb', name: 'Question Answering', src:'/knowrob' },
+              { id: 'replay', name: 'Episode Replay', src:'/video' }
+            ]},
+            { id: 'teach', name: 'Teaching', interfaces: [
+                //{ id: 'exercises', name: 'Exercises', src:'/teaching' },
+                { id: 'tutorials', name: 'Tutorials', src:'/tutorials' }
+            ]}
+        ]
+    }
+    $(document).ready(menu.update_webclient_interfaces(webclientDescription.interfaces));
   </script>
   
 {% endblock %}

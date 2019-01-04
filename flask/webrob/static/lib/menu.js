@@ -228,27 +228,26 @@ function KnowrobMenu(user, common_user_interfaces){
             type: "POST",
             contentType: "application/json",
             data: JSON.stringify({}),
-            dataType: "json",
-            success: function (data) {
-                var left_menu  = document.getElementById("menu-left");
-                var right_menu = document.getElementById("menu-right");
-                if(left_menu) removeMenu('menu-left');
-                if(right_menu) removeMenu('menu-right');
-                that.addCommonMenuItems(left_menu, undefined);
-                if(left_menu) {
-                    for(var i in data.menu_left) {
-                        that.handleWebappMenu(left_menu, data.menu_left[i]);
-                    }
+            dataType: "json"
+        }).done(function (data) {
+            var left_menu  = document.getElementById("menu-left");
+            var right_menu = document.getElementById("menu-right");
+            if(left_menu) removeMenu('menu-left');
+            if(right_menu) removeMenu('menu-right');
+            that.addCommonMenuItems(left_menu, undefined);
+            if(left_menu) {
+                for(var i in data.menu_left) {
+                    that.handleWebappMenu(left_menu, data.menu_left[i]);
                 }
-                if(right_menu) {
-                    for(var i in data.menu_right) {
-                        that.handleWebappMenu(right_menu, data.menu_right[i]);
-                    }
-                }
-                that.addCommonMenuItems(undefined, right_menu);
-                that.resizeMenus();
             }
-        }).done( function (request) {});
+            if(right_menu) {
+                for(var i in data.menu_right) {
+                    that.handleWebappMenu(right_menu, data.menu_right[i]);
+                }
+            }
+            that.addCommonMenuItems(undefined, right_menu);
+            that.resizeMenus();
+        });
     };
 
     this.updateFrameMenu = function(frame) {

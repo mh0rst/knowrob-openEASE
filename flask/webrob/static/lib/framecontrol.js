@@ -24,9 +24,12 @@ function FrameControl(options){
     //    URL_QUERY = {foo: undefined, bar: 1}
     var urlQuery = {};
 
-    this.init = function() {
-        that.update_webclient_frames([]);
-        createFrames(that.common_user_interfaces);
+    this.init = function(webclient_user_interfaces) {
+        if(!that.initialized) {
+            that.initialized = true;
+            that.update_webclient_frames(webclient_user_interfaces);
+            createFrames(that.common_user_interfaces);
+        }
     }
 
     this.update_webclient_frames = function(webclient_user_interfaces) {

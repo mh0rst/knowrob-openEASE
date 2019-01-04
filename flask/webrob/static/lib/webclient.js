@@ -1,18 +1,20 @@
 /**
  * Establishes connection to a ROS master via websocket.
  **/
-function KnowrobClient(options){
+function KnowrobClient(){
     var that = this;
     // OpenEASE frameControl
-    this.frameControl = options.frameControl;
+    this.frameControl = undefined;
+    // OpenEASE frameControl
+    this.onInitialized = undefined;
     // ROS handle
     this.ros = undefined;
     // URL for ROS server
-    var rosURL = options.ros_url || 'ws://localhost:9090';
+    var rosURL = 'ws://localhost:9090';
     // Use rosauth?
-    var authentication  = options.authentication === '' ? true : options.authentication === 'True';
+    var authentication = true;
     // URL for rosauth token retrieval
-    var authURL  = options.auth_url || '/wsauth/v1.0/by_session';
+    var authURL = '/wsauth/v1.0/by_session';
     // The selected episode
     this.episode;
 
@@ -21,9 +23,13 @@ function KnowrobClient(options){
     // true iff registerNodes was called before
     this.isRegistered = false;
     // Prefix for mesh GET URL's
-    var meshPath  = options.meshPath || '/';
+    var meshPath = '/';
+    // Initially chosen category
+    var initialCategory = undefined;
+    // Initially chosen episode
+    var initialEpisode = undefined;
     // Block the interface until an episode was selected?
-    var requireEpisode = options.require_episode;
+    var requireEpisode = undefined;
 
     // sprite markers and render events
     var sprites = [];
@@ -39,6 +45,9 @@ function KnowrobClient(options){
     var imageClient = undefined;
     var cameraPoseClient = undefined;
     this.snapshotTopic = undefined;
+
+    // Interval for sending keep-alive messages
+    this.interval = undefined;
     
     this.nodesRegistered = false;
     
@@ -62,14 +71,27 @@ function KnowrobClient(options){
         };
     };
     this.canvas = new CanvasProxy();
+
+    this.setOptions = function(options, onInitialized) {
+        that.frameControl = options.frameControl;
+        rosURL = options.ros_url || 'ws://localhost:9090';
+        authentication = options.authentication === '' ? true : options.authentication === 'True';
+        authURL = options.auth_url || '/wsauth/v1.0/by_session';
+        meshPath  = options.meshPath || '/';
+        requireEpisode = options.require_episode;
+        initialCategory = options.category;
+        initialEpisode = options.episode;
+        that.interval = options.interval;
+        that.onInitialized = onInitialized;
+    };
     
     this.init = function() {
         that.episode = new KnowrobEpisode(that);
 
         // Connect to ROS.
         that.connect(function () {
-            if(options.category && options.episode)
-                that.episode.setEpisode(options.category, options.episode);
+            if(initialCategory && initialEpisode)
+                that.episode.setEpisode(initialCategory, initialEpisode);
 
             that.frameControl.createOverlay();
 
@@ -172,10 +194,10 @@ function KnowrobClient(options){
     this.registerNodes = function () {
       if(that.isRegistered) return;
       that.isRegistered = true;
-      
+
       // Setup publisher that sends a dummy message in order to keep alive the socket connection
       {
-          var interval = options.interval || 30000;
+          var interval = this.interval || 30000;
           // The topic dedicated to keep alive messages
           var keepAliveTopic = new ROSLIB.Topic({ ros : that.ros, name : '/keep_alive', messageType : 'std_msgs/Bool' });
           // A dummy message for the topic
@@ -185,14 +207,14 @@ function KnowrobClient(options){
           // Call ping at regular intervals.
           setInterval(ping, interval);
       };
-    
+
       // topic used for publishing canvas snapshots
       that.snapshotTopic = new ROSLIB.Topic({
         ros : that.ros,
         name : '/openease/video/frame',
         messageType : 'sensor_msgs/Image'
       });
-      
+
       // Setup a client to listen to TFs.
       tfClient = new ROSLIB.TFClient({
         ros : that.ros,
@@ -228,7 +250,7 @@ function KnowrobClient(options){
             that.frameControl.getActiveFrame().on_designator_received(html);
         }
       });
-        
+
       // Setup the image message client.
       imageClient = new ROSLIB.Topic({
         ros : that.ros,
@@ -248,7 +270,7 @@ function KnowrobClient(options){
               html += '<div class="image_view">';
               html += '<img id="mjpeg_image" class="picture" src="'+url+'" width="300" height="240"/>';
               html += '</div>';
-              
+
               imageHeight = function(mjpeg_image) { return mjpeg_image.height; };
               imageWidth  = function(mjpeg_image) { return mjpeg_image.width; };
           }
@@ -261,7 +283,7 @@ function KnowrobClient(options){
               html += '/>';
               html += 'Your browser does not support the video tag.';
               html += '</video></div>';
-              
+
               imageHeight = function(mjpeg_image) { return mjpeg_image.videoHeight; };
               imageWidth  = function(mjpeg_image) { return mjpeg_image.videoWidth; };
           }
@@ -272,7 +294,7 @@ function KnowrobClient(options){
               that.frameControl.getActiveFrame().on_image_received(html, imageWidth, imageHeight);
           }
       });
-      
+
       // TODO redo highlighting with dedicated messages
 //       var highlightClient = new ROSLIB.Topic({
 //         ros : that.ros,
@@ -308,9 +330,10 @@ function KnowrobClient(options){
           if(that.frameControl.getActiveFrame().on_camera_pose_received)
             that.frameControl.getActiveFrame().on_camera_pose_received(message);
       });
-      
-      // NOTE: frame windows may not be loaded already
-      that.frameControl.on_register_nodes_all();
+
+      if(that.onInitialized !== undefined) {
+        that.onInitialized();
+      }
       that.nodesRegistered = true;
     };
     

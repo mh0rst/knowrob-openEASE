@@ -62,13 +62,6 @@
 
 {% block content %}
   <script type="text/javascript">
-
-    var WEBCLIENT_USER_IFACES = [
-        { id: 'cog', name: 'Cognitive Capabilities', interfaces: [
-          { id: 'kb', name: 'Question Answering', src:'/knowrob' },
-          { id: 'replay', name: 'Episode Replay', src:'/video' }
-        ]}
-    ];
     var auth = '{{ authentication }}';
     var wsproto = 'ws' + (location.protocol === 'https:'?'s':'');
     var rosUrl = wsproto + '://{{ host_url }}/ws/{{ container_name }}/';
@@ -77,8 +70,11 @@
             menu: menu,
             common_user_interfaces: COMMON_OPENEASE_USER_IFACES
     });
-    var client = new KnowrobClient({
+    var client = new KnowrobClient();
+    controller.registerClient(client);
+    controller.prepareClientInitialization({
             frameControl: frameControl,
+            onInitialized: controller.fireInitialized,
             ros_url: rosUrl,
             authentication: auth,
             auth_url: '/api/v1.0/auth_by_session',
@@ -88,12 +84,10 @@
             require_episode: true,
             use_console_overlay: true
         });
-    controller.registerClient(client);
+    controller.onClientInitialization(frameControl.on_register_nodes_all);
     $(document).ready(function () {
-        menu.update_webclient_interfaces(WEBCLIENT_USER_IFACES);
-        client.init();
-        frameControl.init();
-        frameControl.update_webclient_frames(WEBCLIENT_USER_IFACES);
+        frameControl.init(webclientDescription.interfaces);
+        controller.initializeClient();
         $(window).load(frameControl.updateLocation);
         $(window).bind('hashchange', frameControl.updateLocation);
     });
