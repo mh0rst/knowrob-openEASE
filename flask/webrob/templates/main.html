@@ -7,57 +7,9 @@
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/layout-default-1.4.0.css') }}" />
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/user.css') }}"/>
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/dat.gui.css') }}"/>
-  
-  <script type="text/javascript" src="{{ url_for('static', filename='openease.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/EASE.js') }}"></script>
-
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/google-jsapi.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/DonutChart.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/BarChart.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/TreeDiagram.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/Timeline.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/DataVisClient.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/TaskTreeVisClient.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/array-nonstandard.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/Control.js') }}"></script>
-
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/utility.js') }}"></script>
-  
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/ros/JSONProlog.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/ros/MarkerArrayClient.js') }}"></script>
-
   <script type="text/javascript" src="{{ url_for('static', filename='lib/controller.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/canvas.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/console.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='lib/framecontrol.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/webclient.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/episode.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='lib/menu.js') }}"></script>
-  
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/Viewer.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/shader/BasicShader.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/shader/CopyShader.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/shader/FXAAShader.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/shader/SAOShader.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/shader/SSAOShader.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/shader/SepiaShader.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/shader/CelShader.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/shader/OutlineShader.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/shader/UnpackDepthRGBAShader.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/shader/DepthLimitedBlurShader.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/EffectComposer.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/passes/ShaderPass.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/passes/TexturePass.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/passes/ClearPass.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/passes/HighlightingPass.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/passes/RenderPass.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/passes/SAOPass.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/passes/SSAOPass.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/passes/OutlinePass.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/vis/passes/CelShadingPass.js') }}"></script>
-
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/designator/desig.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/designator/adt.js') }}"></script>
 {% endblock %}
 
 {% block content %}
@@ -70,9 +22,8 @@
             menu: menu,
             common_user_interfaces: COMMON_OPENEASE_USER_IFACES
     });
-    var client = new KnowrobClient();
-    controller.registerClient(client);
-    controller.prepareClientInitialization({
+    controller.setPageControls(frameControl, menu);
+    controller.setClientOptions({
             frameControl: frameControl,
             onInitialized: controller.fireInitialized,
             ros_url: rosUrl,
@@ -83,15 +34,14 @@
             episode: '{{ exp }}',
             require_episode: true,
             use_console_overlay: true
-        });
-    controller.onClientInitialization(frameControl.on_register_nodes_all);
+    });
     $(document).ready(function () {
-        frameControl.init(webclientDescription.interfaces);
-        controller.initializeClient();
+        frameControl.setOEWindow(window);
+        var clientFrameWindow = document.getElementById('client-frame').contentWindow;
+        frameControl.setClientFrameWindow(clientFrameWindow);
         $(window).load(frameControl.updateLocation);
         $(window).bind('hashchange', frameControl.updateLocation);
     });
   </script>
-  
-  <div class="page" id="page" />
+  <iframe id="client-frame" src="/webclient"></iframe>
 {% endblock %}

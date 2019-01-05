@@ -28,9 +28,10 @@
     var visClient, graphClient;
     var datgui;
     var datgui_added = false;
+    var knowrobClient;
     
     function selectMarker(marker) {
-        var prolog = parent.client.newProlog();
+        var prolog = knowrobClient.newProlog();
         prolog.jsonQuery("term_to_atom("+marker.ns+",MarkerName), "+
             "marker_queries(MarkerName, MarkerQueries).",
             function(result) {
@@ -43,7 +44,7 @@
         ui.initQueryLibrary();
     };
     function removeMarker(marker) {
-        if(marker === parent.client.selectedMarker) {
+        if(marker === knowrobClient.selectedMarker) {
             unselectMarker();
         }
     };
@@ -76,14 +77,15 @@
         // TODO(daniel): retract all user asserted facts!
     };
     
-    function on_register_nodes() {
+    function on_register_nodes(client) {
+        var activeClient = client === undefined ? knowrobClient : client;
         visClient = new DataVisClient({
-            ros: parent.client.ros,
+            ros: activeClient.ros,
             containerId: '#chart',
             topic: 'data_vis_msgs'
         });
         graphClient = new TaskTreeVisClient({
-            ros: parent.client.ros,
+            ros: activeClient.ros,
             containerId: '#designator',
             topic: 'task_tree_msgs'
         });
@@ -162,23 +164,26 @@
         datgui_added = true;
         document.getElementById('markers').appendChild(datgui.domElement);
     };
-    
-    $(document).ready(function () {
-        ui = new KnowrobUI(parent.client, {
-            use_console_overlay: true
+
+    parent.controller.onClientInitialization(function (client) {
+        knowrobClient = client;
+        $(document).ready(function () {
+            ui = new KnowrobUI(client, {
+                use_console_overlay: true
+            });
+            ui.init();
+            resize();
+            // make sure editor size is also updated
+            ace.edit("history").resize(true);
+            ace.edit("user_query").resize(true);
+
+            datgui = new dat.GUI({autoPlace: false});
+            datgui.domElement.id = 'datgui';
+
+            if(client.nodesRegistered && !visClient) {
+                on_register_nodes();
+            }
         });
-        ui.init();
-        resize();
-        // make sure editor size is also updated
-        ace.edit("history").resize(true);
-        ace.edit("user_query").resize(true);
-        
-        datgui = new dat.GUI({ autoPlace: false });
-        datgui.domElement.id = 'datgui';
-        
-        if(parent.client.nodesRegistered && !visClient) {
-            on_register_nodes();
-        }
     });
     
     LEFT_MENU_LIST.push({

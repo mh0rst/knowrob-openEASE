@@ -26,22 +26,26 @@
     var ui;
     var visClient, graphClient;
     var current_exercise_id = 0;
-    
-    $(document).ready(function () {
-        ui = new KnowrobUI(parent.client, {
+    var knowrobClient;
+
+    parent.controller.onClientInitialization(function (client) {
+        knowrobClient = client;
+        ui = new KnowrobUI(client, {
             use_console_overlay: true
         });
-        ui.init();
-        showSearchCourse();
-        resize();
+        $(document).ready(function () {
+            ui.init();
+            showSearchCourse();
+            resize();
+        });
         
-        if(parent.client.nodesRegistered && !visClient) {
+        if(client.nodesRegistered && !visClient) {
             on_register_nodes();
         }
     });
     
     function selectMarker(marker) {
-        var prolog = parent.client.newProlog();
+        var prolog = knowrobClient.newProlog();
         prolog.jsonQuery("term_to_atom("+marker.ns+",MarkerName), "+
             "marker_queries(MarkerName, MarkerQueries).",
             function(result) {
@@ -54,7 +58,7 @@
         ui.initQueryLibrary();
     };
     function removeMarker(marker) {
-        if(marker === parent.client.selectedMarker) {
+        if(marker === knowrobClient.selectedMarker) {
             unselectMarker();
         }
     };
@@ -85,14 +89,15 @@
         ui.resizeCanvas();
     };
     
-    function on_register_nodes() {
+    function on_register_nodes(client) {
+        var activeClient = client === undefined ? knowrobClient : client;
         visClient = new DataVisClient({
-            ros: parent.client.ros,
+            ros: activeClient.ros,
             containerId: '#chart',
             topic: 'data_vis_msgs'
         });
 //         graphClient = new TaskTreeVisClient({
-//             ros: parent.client.ros,
+//             ros: client.ros,
 //             containerId: '#designator',
 //             topic: 'task_tree_msgs'
 //         });

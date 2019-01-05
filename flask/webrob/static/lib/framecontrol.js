@@ -19,10 +19,22 @@ function FrameControl(options){
 
     this.pageOverlayDisabled = false;
 
+    this.openEASEWindow = window;
+
+    this.clientFrameWindow = window;
+
     // Query parameters encoded in URL
     // E.g., localhost/#foo&bar=1 yields in:
     //    URL_QUERY = {foo: undefined, bar: 1}
     var urlQuery = {};
+
+    this.setOEWindow = function(oew) {
+        that.openEASEWindow = oew;
+    };
+
+    this.setClientFrameWindow = function(cfw) {
+        that.clientFrameWindow = cfw;
+    };
 
     this.init = function(webclient_user_interfaces) {
         if(!that.initialized) {
@@ -30,12 +42,12 @@ function FrameControl(options){
             that.update_webclient_frames(webclient_user_interfaces);
             createFrames(that.common_user_interfaces);
         }
-    }
+    };
 
     this.update_webclient_frames = function(webclient_user_interfaces) {
         for(var i in that.webclient_user_interfaces) {
             var id = that.webclient_user_interfaces[i].id + '-frame';
-            var element = document.getElementById(id);
+            var element = that.clientFrameWindow.document.getElementById(id);
             element.parentNode.removeChild(element);
         }
         that.user_interfaces = webclient_user_interfaces.concat(that.common_user_interfaces);
@@ -43,9 +55,9 @@ function FrameControl(options){
         that.update_flat();
         createFrames(webclient_user_interfaces);
 
-    }
+    };
 
-    that.update_flat = function() {
+    this.update_flat = function() {
         that.user_interfaces_flat = [];
         for(var i in that.user_interfaces) {
             var elem = that.user_interfaces[i];
@@ -54,15 +66,15 @@ function FrameControl(options){
             for(var j in ifaces) {
                 that.user_interfaces_flat.push(ifaces[j]);
             }
-        };
-    }
+        }
+    };
 
     function createFrames(interfaces) {
         // Declare page frames: Each user interface of openEASE is
         // put into an iframe that is child of #page
         for(var i in interfaces) {
             var elem = interfaces[i];
-            var frame = document.createElement("iframe");
+            var frame = that.clientFrameWindow.document.createElement("iframe");
             frame.id = elem.id+'-frame';
             frame.className = 'content-frame';
             if(elem.interfaces && elem.interfaces[0].src)
@@ -70,8 +82,8 @@ function FrameControl(options){
             else if(elem.src)
                 frame.src = elem.src;
             else continue;
-            document.getElementById('page').appendChild(frame);
-        };
+            that.clientFrameWindow.document.getElementById('page').appendChild(frame);
+        }
     }
 
     ///////////////////////////////
@@ -80,7 +92,7 @@ function FrameControl(options){
 
     function updateQueryString() {
         urlQuery = {};
-        var query = String(window.location.hash.substring(1));
+        var query = String(that.openEASEWindow.location.hash.substring(1));
         var vars = query.split("?");
         for (var i=0;i<vars.length;i++) {
             var pair = vars[i].split("=");
@@ -98,7 +110,7 @@ function FrameControl(options){
                 urlQuery[pair[0]].push(decodeURIComponent(pair[1]));
             }
         }
-    };
+    }
 
     this.updateLocation = function() {
       updateQueryString();
@@ -116,9 +128,9 @@ function FrameControl(options){
 
     this.createOverlay = function() {
         // Create page iosOverlay
-        var page = document.getElementById('page');
+        var page = that.clientFrameWindow.document.getElementById('page');
         if(page) {
-            var pageOverlay = document.createElement("div");
+            var pageOverlay = that.clientFrameWindow.document.createElement("div");
             pageOverlay.setAttribute("id", "page-overlay");
             pageOverlay.className = "ios-overlay ios-overlay-hide div-overlay";
             pageOverlay.innerHTML += '<span class="title">Please select an Episode</span>';
@@ -130,7 +142,7 @@ function FrameControl(options){
     };
 
     this.showPageOverlay = function(text) {
-      var pageOverlay = document.getElementById('page-overlay');
+      var pageOverlay = that.clientFrameWindow.document.getElementById('page-overlay');
       if(pageOverlay && !that.pageOverlayDisabled) {
           pageOverlay.children[0].innerHTML = text;
           pageOverlay.style.display = 'block';
@@ -141,7 +153,7 @@ function FrameControl(options){
     };
 
     this.hidePageOverlay = function() {
-      var pageOverlay = document.getElementById('page-overlay');
+      var pageOverlay = that.clientFrameWindow.document.getElementById('page-overlay');
       if(pageOverlay && that.pageOverlayDisabled) {
           //pageOverlay.style.display = 'none';
           pageOverlay.className = pageOverlay.className.replace("show","hide");
@@ -159,13 +171,13 @@ function FrameControl(options){
         // Hide inactive frames
         for(var i in that.user_interfaces) {
             if(that.user_interfaces[i].id == frame_name) continue;
-            $("#"+that.user_interfaces[i].id+"-frame").hide();
-            $("#"+that.user_interfaces[i].id+"-frame").removeClass("selected-frame");
-            $("#"+that.user_interfaces[i].id+"-menu").removeClass("selected-menu");
+            $("#"+that.user_interfaces[i].id+"-frame", that.clientFrameWindow.document).hide();
+            $("#"+that.user_interfaces[i].id+"-frame", that.clientFrameWindow.document).removeClass("selected-frame");
+            $("#"+that.user_interfaces[i].id+"-menu", that.openEASEWindow.document).removeClass("selected-menu");
         }
 
         var new_src = that.getInterfaceSrc(iface_name);
-        var frame = document.getElementById(frame_name+"-frame");
+        var frame = that.clientFrameWindow.document.getElementById(frame_name+"-frame");
         var old_src = frame.src;
         if(!old_src.endsWith(new_src)) {
             frame.src = new_src;
@@ -174,17 +186,17 @@ function FrameControl(options){
         }
 
         // Show selected frame
-        $("#"+frame_name+"-frame").show();
-        $("#"+frame_name+"-frame").addClass("selected-frame");
-        $("#"+frame_name+"-menu").addClass("selected-menu");
+        $("#"+frame_name+"-frame", that.clientFrameWindow.document).show();
+        $("#"+frame_name+"-frame", that.clientFrameWindow.document).addClass("selected-frame");
+        $("#"+frame_name+"-menu", that.openEASEWindow.document).addClass("selected-menu");
         // Load menu items of active frame
-        that.menu.updateFrameMenu(document.getElementById(frame_name+"-frame").contentWindow);
+        that.menu.updateFrameMenu(that.clientFrameWindow.document.getElementById(frame_name+"-frame").contentWindow);
     };
 
     this.getActiveFrame = function() {
-        var frame = document.getElementById(that.getActiveFrameName()+"-frame");
+        var frame = that.clientFrameWindow.document.getElementById(that.getActiveFrameName()+"-frame");
         if(frame) return frame.contentWindow;
-        else return window;
+        else return that.clientFrameWindow;
         //else return undefined;
     };
 
@@ -219,17 +231,17 @@ function FrameControl(options){
       return "kb";
     };
 
-    this.on_register_nodes_all = function() {
+    this.on_register_nodes_all = function(client) {
         for(var i in that.user_interfaces) {
-          var frame = document.getElementById(that.user_interfaces[i].id+"-frame");
+          var frame = that.clientFrameWindow.document.getElementById(that.user_interfaces[i].id+"-frame");
           if(frame && frame.contentWindow && frame.contentWindow.on_register_nodes)
-              frame.contentWindow.on_register_nodes();
+              frame.contentWindow.on_register_nodes(client);
       }
-    }
+    };
 
     this.on_episode_selected_all = function(library) {
         for (var i in that.user_interfaces) {
-            var frame = document.getElementById(that.user_interfaces[i].id + "-frame");
+            var frame = that.clientFrameWindow.document.getElementById(that.user_interfaces[i].id + "-frame");
             if (frame && frame.contentWindow.on_episode_selected)
                 frame.contentWindow.on_episode_selected(library);
         }

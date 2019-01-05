@@ -24,6 +24,7 @@ __author__ = 'danielb@cs.uni-bremen.de'
 # TODO: remove "/knowrob" prefix in some routes or replace by "/kb"
 @app.route('/static/<path:filename>')
 @app.route('/knowrob/static/<path:filename>')
+@app.route('/webclient/static/<path:filename>')
 def download_static(filename):
     return send_from_directory(os.path.join(app.root_path, "static"), filename)
 
@@ -52,6 +53,10 @@ def knowrob(category=None, exp=None):
         return redirect(url_for('user.logout'))
     session['video'] = False
     return __knowrob_page__('knowrob_simple.html', session['user_container_name'], category, exp)
+
+@app.route('/webclient')
+def client_frame():
+    return render_template('client_frame.html', **locals())
 
 @app.route('/replay')
 @app.route('/video')
@@ -119,7 +124,7 @@ def menu():
         for t in sorted(technology_episodes.keys()):
             episode_page += '<h4 class="technology-title">'+t+'</h4>'
             for (name,(exp,category)) in technology_episodes[t]:
-                episode_page += '<a style="cursor: pointer" onclick=client.setEpisode("'+ category +'","'+ exp +'")>'+name+'</a>'
+                episode_page += '<a style="cursor: pointer" onclick=controller.setEpisode("'+ category +'","'+ exp +'")>'+name+'</a>'
         episode_page += '</div></div>'
     episode_page += '</div>'
     

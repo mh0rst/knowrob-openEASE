@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+
+{% block head %}
+  <link rel="stylesheet" type="text/css" href="static/lib/font/font.css" />
+  <link rel="stylesheet" type="text/css" href="static/css/screen.css"/>
+  <link rel="stylesheet" type="text/css" href="static/css/layout-default-1.4.0.css" />
+  <link rel="stylesheet" type="text/css" href="static/css/user.css"/>
+  <link rel="stylesheet" type="text/css" href="static/css/dat.gui.css"/>
+
+  <script type="text/javascript" src="static/openease.js"></script>
+  <script type="text/javascript" src="static/lib/EASE.js"></script>
+
+  <script type="text/javascript" src="static/lib/chart/google-jsapi.js"></script>
+  <script type="text/javascript" src="static/lib/chart/DonutChart.js"></script>
+  <script type="text/javascript" src="static/lib/chart/BarChart.js"></script>
+  <script type="text/javascript" src="static/lib/chart/TreeDiagram.js"></script>
+  <script type="text/javascript" src="static/lib/chart/Timeline.js"></script>
+  <script type="text/javascript" src="static/lib/chart/DataVisClient.js"></script>
+  <script type="text/javascript" src="static/lib/chart/TaskTreeVisClient.js"></script>
+  <script type="text/javascript" src="static/lib/chart/array-nonstandard.js"></script>
+  <script type="text/javascript" src="static/lib/chart/Control.js"></script>
+
+  <script type="text/javascript" src="static/lib/utility.js"></script>
+
+  <script type="text/javascript" src="static/lib/ros/JSONProlog.js"></script>
+  <script type="text/javascript" src="static/lib/ros/MarkerArrayClient.js"></script>
+
+  <script type="text/javascript" src="static/lib/knowrobController.js"></script>
+  <script type="text/javascript" src="static/lib/canvas.js"></script>
+  <script type="text/javascript" src="static/lib/console.js"></script>
+  <script type="text/javascript" src="static/lib/knowrobClient.js"></script>
+  <script type="text/javascript" src="static/lib/episode.js"></script>
+  <script type="text/javascript" src="static/lib/menu.js"></script>
+
+  <script type="text/javascript" src="static/lib/vis/Viewer.js"></script>
+  <script type="text/javascript" src="static/lib/vis/shader/BasicShader.js"></script>
+  <script type="text/javascript" src="static/lib/vis/shader/CopyShader.js"></script>
+  <script type="text/javascript" src="static/lib/vis/shader/FXAAShader.js"></script>
+  <script type="text/javascript" src="static/lib/vis/shader/SAOShader.js"></script>
+  <script type="text/javascript" src="static/lib/vis/shader/SSAOShader.js"></script>
+  <script type="text/javascript" src="static/lib/vis/shader/SepiaShader.js"></script>
+  <script type="text/javascript" src="static/lib/vis/shader/CelShader.js"></script>
+  <script type="text/javascript" src="static/lib/vis/shader/OutlineShader.js"></script>
+  <script type="text/javascript" src="static/lib/vis/shader/UnpackDepthRGBAShader.js"></script>
+  <script type="text/javascript" src="static/lib/vis/shader/DepthLimitedBlurShader.js"></script>
+  <script type="text/javascript" src="static/lib/vis/EffectComposer.js"></script>
+  <script type="text/javascript" src="static/lib/vis/passes/ShaderPass.js"></script>
+  <script type="text/javascript" src="static/lib/vis/passes/TexturePass.js"></script>
+  <script type="text/javascript" src="static/lib/vis/passes/ClearPass.js"></script>
+  <script type="text/javascript" src="static/lib/vis/passes/HighlightingPass.js"></script>
+  <script type="text/javascript" src="static/lib/vis/passes/RenderPass.js"></script>
+  <script type="text/javascript" src="static/lib/vis/passes/SAOPass.js"></script>
+  <script type="text/javascript" src="static/lib/vis/passes/SSAOPass.js"></script>
+  <script type="text/javascript" src="static/lib/vis/passes/OutlinePass.js"></script>
+  <script type="text/javascript" src="static/lib/vis/passes/CelShadingPass.js"></script>
+
+  <script type="text/javascript" src="static/lib/designator/desig.js"></script>
+  <script type="text/javascript" src="static/lib/designator/adt.js"></script>
+{% endblock %}
+
+{% block content %}
+  
+<script type="text/javascript">
+    var oeController = parent.controller;
+    var controller = new KnowrobClientController();
+    var client = new KnowrobClient();
+    oeController.setKonwrobController(controller);
+    client.setOptions(oeController.getOptions(), controller.fireInitialized);
+
+    var webclientDescription = {
+        interfaces: [
+            { id: 'cog', name: 'Cognitive Capabilities', interfaces: [
+              { id: 'kb', name: 'Question Answering', src:'/knowrob' },
+              { id: 'replay', name: 'Episode Replay', src:'/video' }
+            ]},
+            { id: 'teach', name: 'Teaching', interfaces: [
+                //{ id: 'exercises', name: 'Exercises', src:'/teaching' },
+                { id: 'tutorials', name: 'Tutorials', src:'/tutorials' }
+            ]}
+        ]
+    };
+    frameControl = oeController.getFrameControl();
+    menu = oeController.getMenu();
+    controller.onClientInitialization(frameControl.on_register_nodes_all);
+    $(document).ready(function () {
+        menu.update_webclient_interfaces(webclientDescription.interfaces)
+        frameControl.init(webclientDescription.interfaces);
+        client.init();
+    });
+</script>
+
+<div class="page" id="page" />
+{% endblock %}

@@ -5,7 +5,7 @@ function KnowrobClient(){
     var that = this;
     // OpenEASE frameControl
     this.frameControl = undefined;
-    // OpenEASE frameControl
+    // Initialization complete callback
     this.onInitialized = undefined;
     // ROS handle
     this.ros = undefined;
@@ -332,7 +332,7 @@ function KnowrobClient(){
       });
 
       if(that.onInitialized !== undefined) {
-        that.onInitialized();
+        that.onInitialized(that);
       }
       that.nodesRegistered = true;
     };
