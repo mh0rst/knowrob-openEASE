@@ -853,6 +853,10 @@ a.btn {
   z-index: 1002;
   pointer-events: none;
 }
+.fs-overlay {
+  top: 19px;
+  margin-top: 63px;
+}
 .div-overlay div {
   position: relative;
   opacity: 1.0;

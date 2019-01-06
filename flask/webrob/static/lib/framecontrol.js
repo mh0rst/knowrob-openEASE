@@ -128,21 +128,21 @@ function FrameControl(options){
 
     this.createOverlay = function() {
         // Create page iosOverlay
-        var page = that.clientFrameWindow.document.getElementById('page');
+        var page = that.openEASEWindow.document.body;
         if(page) {
-            var pageOverlay = that.clientFrameWindow.document.createElement("div");
+            var pageOverlay = that.openEASEWindow.document.createElement("div");
             pageOverlay.setAttribute("id", "page-overlay");
-            pageOverlay.className = "ios-overlay ios-overlay-hide div-overlay";
+            pageOverlay.className = "ios-overlay ios-overlay-hide div-overlay fs-overlay";
             pageOverlay.innerHTML += '<span class="title">Please select an Episode</span>';
             pageOverlay.style.display = 'none';
             page.appendChild(pageOverlay);
-            var spinner = createSpinner();
+            var spinner = createSpinner(that.openEASEWindow.document.body);
             pageOverlay.appendChild(spinner.el);
         }
     };
 
     this.showPageOverlay = function(text) {
-      var pageOverlay = that.clientFrameWindow.document.getElementById('page-overlay');
+      var pageOverlay = that.openEASEWindow.document.getElementById('page-overlay');
       if(pageOverlay && !that.pageOverlayDisabled) {
           pageOverlay.children[0].innerHTML = text;
           pageOverlay.style.display = 'block';
@@ -153,7 +153,7 @@ function FrameControl(options){
     };
 
     this.hidePageOverlay = function() {
-      var pageOverlay = that.clientFrameWindow.document.getElementById('page-overlay');
+      var pageOverlay = that.openEASEWindow.document.getElementById('page-overlay');
       if(pageOverlay && that.pageOverlayDisabled) {
           //pageOverlay.style.display = 'none';
           pageOverlay.className = pageOverlay.className.replace("show","hide");

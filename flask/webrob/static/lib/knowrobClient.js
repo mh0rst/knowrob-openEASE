@@ -100,6 +100,9 @@ function KnowrobClient(){
             } else {
               that.frameControl.showPageOverlay("Loading Knowledge Base");
             }
+            if(that.onInitialized !== undefined) {
+                that.onInitialized(that);
+            }
         });
       
         setInterval(containerRefresh, 570000);
@@ -117,10 +120,10 @@ function KnowrobClient(){
     };
 
     this.onRosConnected = function (postConnect) {
+        that.registerNodes();
         if(postConnect) {
             postConnect();
         }
-        that.registerNodes();
     }
 
     this.connect = function (postConnect) {
@@ -331,9 +334,6 @@ function KnowrobClient(){
             that.frameControl.getActiveFrame().on_camera_pose_received(message);
       });
 
-      if(that.onInitialized !== undefined) {
-        that.onInitialized(that);
-      }
       that.nodesRegistered = true;
     };
     
