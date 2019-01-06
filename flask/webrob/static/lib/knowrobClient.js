@@ -22,6 +22,8 @@ function KnowrobClient(){
     this.isAuthenticated = false;
     // true iff registerNodes was called before
     this.isRegistered = false;
+    // true if a first successful connection was established
+    that.isFirstSuccessfulConnection = false;
     // Prefix for mesh GET URL's
     var meshPath = '/';
     // Initially chosen category
@@ -90,18 +92,16 @@ function KnowrobClient(){
 
         // Connect to ROS.
         that.connect(function () {
+            if(that.onInitialized !== undefined) {
+                that.onInitialized(that);
+            }
             if(initialCategory && initialEpisode)
                 that.episode.setEpisode(initialCategory, initialEpisode);
-
-            that.frameControl.createOverlay();
 
             if(requireEpisode && !that.episode.hasEpisode()) {
               that.frameControl.showPageOverlay("Please select an Episode");
             } else {
               that.frameControl.showPageOverlay("Loading Knowledge Base");
-            }
-            if(that.onInitialized !== undefined) {
-                that.onInitialized(that);
             }
         });
       
@@ -119,43 +119,52 @@ function KnowrobClient(){
         });
     };
 
-    this.onRosConnected = function (postConnect) {
+    this.onRosConnected = function (postInitialConnect) {
         that.registerNodes();
-        if(postConnect) {
-            postConnect();
+        if(postInitialConnect) {
+            postInitialConnect();
         }
     }
 
-    this.connect = function (postConnect) {
+    this.connect = function (postInitialConnect) {
       if(that.ros) return;
       that.ros = new ROSLIB.Ros({url : rosURL});
       that.ros.on('connection', function() {
+          that.isFirstSuccessfulConnection = true;
           console.log('Connected to websocket server.');
           if (authentication) {
               // Acquire auth token for current user and authenticate, then call registerNodes
-              that.authenticate(authURL, that.onRosConnected.bind(undefined, postConnect));
+              that.authenticate(authURL, that.onRosConnected.bind(undefined, postInitialConnect));
           } else {
               // No authentication requested, call registerNodes directly
+              that.onRosConnected(postInitialConnect);
               that.waitForJsonProlog();
-              that.onRosConnected(postConnect);
           }
       });
       that.ros.on('close', function() {
           console.log('Connection was closed.');
-          that.frameControl.showPageOverlay("Connection was closed, reconnecting...");
+          var retryTarget = that.connect.bind(undefined, postInitialConnect);
+          if(that.isFirstSuccessfulConnection) {
+              that.frameControl.showPageOverlay("Connection was closed, reconnecting...");
+              retryTarget = that.connect;
+          }
           that.ros = undefined;
           that.isAuthenticated = false;
           that.isRegistered = false;
-          setTimeout(that.connect, 500);
+          setTimeout(retryTarget, 500);
       });
       that.ros.on('error', function(error) {
           console.log('Error connecting to websocket server: ', error);
-          that.frameControl.showPageOverlay("Connection error, reconnecting...");
+          var retryTarget = that.connect.bind(undefined, postInitialConnect);
+          if(that.isFirstSuccessfulConnection) {
+              that.frameControl.showPageOverlay("Connection error, reconnecting...");
+              retryTarget = that.connect;
+          }
           if(that.ros) that.ros.close();
           that.ros = undefined;
           that.isAuthenticated = false;
           that.isRegistered = false;
-          setTimeout(that.connect, 500);
+          setTimeout(retryTarget, 500);
       });
     };
 
@@ -185,12 +194,12 @@ function KnowrobClient(){
                              request.level,
                              request.end);
             that.isAuthenticated = true;
-            that.waitForJsonProlog();
             
             // If a callback function was specified, call it in the context of Knowrob class (that)
             if(then) {
                 then.call(that);
             }
+            that.waitForJsonProlog();
         });
     };
     

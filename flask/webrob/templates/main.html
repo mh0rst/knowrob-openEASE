@@ -37,6 +37,8 @@
     });
     $(document).ready(function () {
         frameControl.setOEWindow(window);
+        frameControl.createOverlay();
+        frameControl.showPageOverlay("Loading openEASE");
         var clientFrameWindow = document.getElementById('client-frame').contentWindow;
         frameControl.setClientFrameWindow(clientFrameWindow);
         $(window).load(frameControl.updateLocation);
