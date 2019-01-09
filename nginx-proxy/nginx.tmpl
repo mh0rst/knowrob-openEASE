@@ -75,6 +75,9 @@ server {
   location / {
             {{ else if $container.Env.OPEN_EASE_WEBAPP }}
   location /{{ $host }}/ {
+            {{ else if $container.Env.OPEN_EASE_WEBCLIENT }}
+  location /webclient/{{ $host }} {
+  rewrite /webclient/{{ $host }}/(.*) /$1 break;
             {{ else }}
   location /ws/{{ $host }}/ {
     rewrite /ws/{{ $host }}/(.*) /$1 break;

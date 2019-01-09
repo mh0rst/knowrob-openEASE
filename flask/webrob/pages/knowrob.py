@@ -24,7 +24,6 @@ __author__ = 'danielb@cs.uni-bremen.de'
 # TODO: remove "/knowrob" prefix in some routes or replace by "/kb"
 @app.route('/static/<path:filename>')
 @app.route('/knowrob/static/<path:filename>')
-@app.route('/webclient/default/static/<path:filename>')
 def download_static(filename):
     return send_from_directory(os.path.join(app.root_path, "static"), filename)
 
@@ -45,6 +44,7 @@ def transfer_logged_memory(filename):
 
 
 # FIXME: iframe does not work standalone right now, redirect to "/#kb" when used without parent frame
+# TODO delete knowrob routes, replace exp preselection and ensure_application_started
 @app.route('/kb/')
 @app.route('/knowrob/')
 @app.route('/knowrob/exp/<category>/<exp>')
@@ -53,14 +53,7 @@ def knowrob(category=None, exp=None):
         return redirect(url_for('user.logout'))
     return __knowrob_page__('knowrob_simple.html', session['user_container_name'], category, exp)
 
-@app.route('/webclient/default/webclient-description.json')
-def description():
-    return send_from_directory(os.path.join(app.root_path, "static"), "lib/webclient-description.json")
-
-@app.route('/webclient/default/client_frame.html')
-def client_frame():
-    return render_template('client_frame.html', **locals())
-
+# TODO delete routes, replace exp preselection and ensure_application_started
 @app.route('/replay')
 @app.route('/video')
 @app.route('/video/exp/<category>/<exp>')
@@ -81,6 +74,11 @@ def __knowrob_page__(template, container_name, category=None, exp=None):
     
     exp_url = get_experiment_download_url()
     return render_template(template, **locals())
+
+@app.route('/knowrob/ensure_started')
+def ensure_started():
+    ensure_application_started('openease/'+ROS_DISTRIBUTION+'-knowrob-daemon')
+    return jsonify(result=None)
 
 @app.route('/knowrob/menu', methods=['POST'])
 def menu():

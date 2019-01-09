@@ -135,6 +135,11 @@ stopContainer "dockerbridge"
 runContainer "dockerbridge" "-d -v /var/run/docker.sock:/var/run/docker.sock -e EASE_DEBUG=$EASE_DEBUG knowrob/dockerbridge" true
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Stop any default webclient container and re-create them to reflect changes to webclient immediately
+stopContainer "default-webclient"
+runContainer "default-webclient" "-d -e VIRTUAL_HOST=default -e VIRTUAL_PORT=80 -p 127.0.0.1::80 -t openease/webclient" true
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # start a container for the flask secret
 runContainer "ease_secret" "-v /etc/ease_secret busybox sh -c '< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c 64 > /etc/ease_secret/secret'"
 

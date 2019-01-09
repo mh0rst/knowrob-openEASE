@@ -83,7 +83,8 @@ fi
 if [ "${BUILDOPTS["webapps"]}" == true ] || [ "${BUILDOPTS["default"]}" == true ] || [ "${BUILDOPTS["all"]}" == true ]; then
 	build user_data knowrob/user_data
 	build flask openease/flask
-        build dns openease/dns
+    build dns openease/dns
+	build openease-webclient openease/webclient
 	#build webapps/easeapp openease/easeapp
 	#build webapps/login openease/login
 	#build webapps/knowrob openease/knowrob

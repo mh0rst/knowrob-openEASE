@@ -8,12 +8,12 @@
         {
           "id": "kb",
           "name": "Question Answering",
-          "src": "/knowrob"
+          "src": "knowrob_simple.html"
         },
         {
           "id": "replay",
           "name": "Episode Replay",
-          "src": "/video"
+          "src": "video.html"
         }
       ]
     },
@@ -24,7 +24,7 @@
         {
           "id": "tutorials",
           "name": "Tutorials",
-          "src": "/tutorials"
+          "src": "knowrob_tutorial.html"
         }
       ]
     }
