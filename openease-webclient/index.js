@@ -6,11 +6,6 @@ require('jquery-ui-bundle/jquery-ui.css');
 require('layout');
 
 /////////////////////////
-$.fn.DataTable = require('datatables.net')( window, $ );
-require('datatables.net-buttons');
-// require('datatables/media/css/jquery.dataTables.css');
-
-/////////////////////////
 // bootstrap
 global.bootstrap = require('bootstrap');
 require('bootstrap/dist/css/bootstrap.css');
