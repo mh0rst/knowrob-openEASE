@@ -973,62 +973,62 @@ li.zero_size,
   text-align: center;
 }
 
-.icon_bookmark  { background: url("/static/icons/theme/bookmark-new.png") center / 24px no-repeat; }
-.icon_close     { background: url("/static/icons/theme/window-close.png") center / 24px no-repeat; }
-.icon_camera    { background: url("/static/icons/theme/camera-web.png") center / 24px no-repeat; }
-.icon_cloud     { background: url("/static/icons/theme/cloud.png") center / 24px no-repeat; }
-.icon_error     { background: url("/static/icons/theme/dialog-error.png") center / 24px no-repeat; }
-.icon_question  { background: url("/static/icons/theme/dialog-question.png") center / 24px no-repeat; }
-.icon_warning   { background: url("/static/icons/theme/dialog-warning") center / 24px no-repeat; }
-.icon_open      { background: url("/static/icons/theme/document-open.png") center / 24px no-repeat; }
-.icon_save      { background: url("/static/icons/theme/document-save.png") center / 24px no-repeat; }
-.icon_send      { background: url("/static/icons/theme/document-send.png") center / 24px no-repeat; }
-.icon_edit      { background: url("/static/icons/theme/edit.png") center / 24px no-repeat; }
-.icon_clear     { background: url("/static/icons/theme/edit-clear.png") center / 24px no-repeat; }
-.icon_copy      { background: url("/static/icons/theme/edit-copy.png") center / 24px no-repeat; }
-.icon_cut       { background: url("/static/icons/theme/edit-cut.png") center / 24px no-repeat; }
-.icon_delete    { background: url("/static/icons/theme/edit-delete.png") center / 24px no-repeat; }
-.icon_find      { background: url("/static/icons/theme/edit-find.png") center / 24px no-repeat; }
-.icon_paste     { background: url("/static/icons/theme/edit-paste.png") center / 24px no-repeat; }
-.icon_redo      { background: url("/static/icons/theme/edit-redo.png") center / 24px no-repeat; }
-.icon_select    { background: url("/static/icons/theme/edit-select-all.png") center / 24px no-repeat; }
-.icon_undo      { background: url("/static/icons/theme/edit-undo.png") center / 24px no-repeat; }
-.icon_docs      { background: url("/static/icons/theme/emblem-documents.png") center / 24px no-repeat; }
-.icon_important { background: url("/static/icons/theme/emblem-important.png") center / 24px no-repeat; }
-.icon_shared    { background: url("/static/icons/theme/emblem-shared.png") center / 24px no-repeat; }
-.icon_folder    { background: url("/static/icons/theme/folder.png") center / 24px no-repeat; }
-.icon_download  { background: url("/static/icons/theme/folder-download.png") center / 24px no-repeat; }
-.icon_upload    { background: url("/static/icons/theme/folder-upload.png") center / 24px no-repeat; }
-.icon_remote    { background: url("/static/icons/theme/folder-remote.png") center / 24px no-repeat; }
-.icon_down      { background: url("/static/icons/theme/go-down.png") center / 24px no-repeat; }
-.icon_next      { background: url("/static/icons/theme/go-next.png") center / 24px no-repeat; }
-.icon_prev      { background: url("/static/icons/theme/go-previous.png") center / 24px no-repeat; }
-.icon_up        { background: url("/static/icons/theme/go-up.png") center / 24px no-repeat; }
-.icon_add       { background: url("/static/icons/theme/list-add.png") center / 24px no-repeat; }
-.icon_remove    { background: url("/static/icons/theme/list-remove.png") center / 24px no-repeat; }
-.icon_attachment{ background: url("/static/icons/theme/mail-attachment.png") center / 24px no-repeat; }
-.icon_replied   { background: url("/static/icons/theme/mail-replied.png") center / 24px no-repeat; }
-.icon_unread    { background: url("/static/icons/theme/mail-unread.png") center / 24px no-repeat; }
-.icon_pause     { background: url("/static/icons/theme/media-playback-pause.png") center / 24px no-repeat; }
-.icon_start     { background: url("/static/icons/theme/media-playback-start.png") center / 24px no-repeat; }
-.icon_stop      { background: url("/static/icons/theme/media-playback-stop.png") center / 24px no-repeat; }
-.icon_record    { background: url("/static/icons/theme/media-record.png") center / 24px no-repeat; }
-.icon_server    { background: url("/static/icons/theme/network-server.png") center / 24px no-repeat; }
-.icon_settings  { background: url("/static/icons/theme/preferences-system.png") center / 24px no-repeat; }
-.icon_run       { background: url("/static/icons/theme/system-run.png") center / 24px no-repeat; }
-.icon_home      { background: url("/static/icons/theme/user-home.png") center / 24px no-repeat; }
-.icon_trash     { background: url("/static/icons/theme/user-trash.png") center / 24px no-repeat; }
-.icon_fullscreen{ background: url("/static/icons/theme/view-fullscreen.png") center / 24px no-repeat; }
-.icon_zoom_in   { background: url("/static/icons/theme/zoom-in.png") center / 24px no-repeat; }
-.icon_zoom_orig { background: url("/static/icons/theme/zoom-original.png") center / 24px no-repeat; }
-.icon_zoom_out  { background: url("/static/icons/theme/zoom-out.png") center / 24px no-repeat; }
-.icon_diff      { background: url("/static/icons/theme/diff.png") center / 24px no-repeat; }
-.icon_reset     { background: url("/static/icons/theme/reset.png") center / 24px no-repeat; }
+.icon_bookmark  { background: url("../icons/theme/bookmark-new.png") center / 24px no-repeat; }
+.icon_close     { background: url("../icons/theme/window-close.png") center / 24px no-repeat; }
+.icon_camera    { background: url("../icons/theme/camera-web.png") center / 24px no-repeat; }
+.icon_cloud     { background: url("../icons/theme/cloud.png") center / 24px no-repeat; }
+.icon_error     { background: url("../icons/theme/dialog-error.png") center / 24px no-repeat; }
+.icon_question  { background: url("../icons/theme/dialog-question.png") center / 24px no-repeat; }
+.icon_warning   { background: url("../icons/theme/dialog-warning") center / 24px no-repeat; }
+.icon_open      { background: url("../icons/theme/document-open.png") center / 24px no-repeat; }
+.icon_save      { background: url("../icons/theme/document-save.png") center / 24px no-repeat; }
+.icon_send      { background: url("../icons/theme/document-send.png") center / 24px no-repeat; }
+.icon_edit      { background: url("../icons/theme/edit.png") center / 24px no-repeat; }
+.icon_clear     { background: url("../icons/theme/edit-clear.png") center / 24px no-repeat; }
+.icon_copy      { background: url("../icons/theme/edit-copy.png") center / 24px no-repeat; }
+.icon_cut       { background: url("../icons/theme/edit-cut.png") center / 24px no-repeat; }
+.icon_delete    { background: url("../icons/theme/edit-delete.png") center / 24px no-repeat; }
+.icon_find      { background: url("../icons/theme/edit-find.png") center / 24px no-repeat; }
+.icon_paste     { background: url("../icons/theme/edit-paste.png") center / 24px no-repeat; }
+.icon_redo      { background: url("../icons/theme/edit-redo.png") center / 24px no-repeat; }
+.icon_select    { background: url("../icons/theme/edit-select-all.png") center / 24px no-repeat; }
+.icon_undo      { background: url("../icons/theme/edit-undo.png") center / 24px no-repeat; }
+.icon_docs      { background: url("../icons/theme/emblem-documents.png") center / 24px no-repeat; }
+.icon_important { background: url("../icons/theme/emblem-important.png") center / 24px no-repeat; }
+.icon_shared    { background: url("../icons/theme/emblem-shared.png") center / 24px no-repeat; }
+.icon_folder    { background: url("../icons/theme/folder.png") center / 24px no-repeat; }
+.icon_download  { background: url("../icons/theme/folder-download.png") center / 24px no-repeat; }
+.icon_upload    { background: url("../icons/theme/folder-upload.png") center / 24px no-repeat; }
+.icon_remote    { background: url("../icons/theme/folder-remote.png") center / 24px no-repeat; }
+.icon_down      { background: url("../icons/theme/go-down.png") center / 24px no-repeat; }
+.icon_next      { background: url("../icons/theme/go-next.png") center / 24px no-repeat; }
+.icon_prev      { background: url("../icons/theme/go-previous.png") center / 24px no-repeat; }
+.icon_up        { background: url("../icons/theme/go-up.png") center / 24px no-repeat; }
+.icon_add       { background: url("../icons/theme/list-add.png") center / 24px no-repeat; }
+.icon_remove    { background: url("../icons/theme/list-remove.png") center / 24px no-repeat; }
+.icon_attachment{ background: url("../icons/theme/mail-attachment.png") center / 24px no-repeat; }
+.icon_replied   { background: url("../icons/theme/mail-replied.png") center / 24px no-repeat; }
+.icon_unread    { background: url("../icons/theme/mail-unread.png") center / 24px no-repeat; }
+.icon_pause     { background: url("../icons/theme/media-playback-pause.png") center / 24px no-repeat; }
+.icon_start     { background: url("../icons/theme/media-playback-start.png") center / 24px no-repeat; }
+.icon_stop      { background: url("../icons/theme/media-playback-stop.png") center / 24px no-repeat; }
+.icon_record    { background: url("../icons/theme/media-record.png") center / 24px no-repeat; }
+.icon_server    { background: url("../icons/theme/network-server.png") center / 24px no-repeat; }
+.icon_settings  { background: url("../icons/theme/preferences-system.png") center / 24px no-repeat; }
+.icon_run       { background: url("../icons/theme/system-run.png") center / 24px no-repeat; }
+.icon_home      { background: url("../icons/theme/user-home.png") center / 24px no-repeat; }
+.icon_trash     { background: url("../icons/theme/user-trash.png") center / 24px no-repeat; }
+.icon_fullscreen{ background: url("../icons/theme/view-fullscreen.png") center / 24px no-repeat; }
+.icon_zoom_in   { background: url("../icons/theme/zoom-in.png") center / 24px no-repeat; }
+.icon_zoom_orig { background: url("../icons/theme/zoom-original.png") center / 24px no-repeat; }
+.icon_zoom_out  { background: url("../icons/theme/zoom-out.png") center / 24px no-repeat; }
+.icon_diff      { background: url("../icons/theme/diff.png") center / 24px no-repeat; }
+.icon_reset     { background: url("../icons/theme/reset.png") center / 24px no-repeat; }
 
-.icon_facebook  { background: url("/static/icons/facebook.png") center / 24px no-repeat; }
-.icon_twitter   { background: url("/static/icons/twitter.png") center / 24px no-repeat; }
-.icon_github    { background: url("/static/icons/github.png") center / 24px no-repeat; }
-.icon_google    { background: url("/static/icons/google.png") center / 24px no-repeat; }
+.icon_facebook  { background: url("../icons/facebook.png") center / 24px no-repeat; }
+.icon_twitter   { background: url("../icons/twitter.png") center / 24px no-repeat; }
+.icon_github    { background: url("../icons/github.png") center / 24px no-repeat; }
+.icon_google    { background: url("../icons/google.png") center / 24px no-repeat; }
 
 /** Kendo grid **/
 

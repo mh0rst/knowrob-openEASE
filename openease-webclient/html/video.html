@@ -1,12 +1,20 @@
-{% extends "layout.html" %}
+---
+# openEASE Webclient - Cognitive Capabilities - Episode Replay
+layout: default
+---
+{% capture head %}
+  <script type="text/javascript" src="static/openease.js"></script>
+  <script type="text/javascript" src="static/lib/utility.js"></script>
+  <script type="text/javascript" src="static/lib/ros/JSONProlog.js"></script>
+  <script type="text/javascript" src="static/lib/iframes/replay-frame.js"></script>
+{% endcapture %}
 
-{% block head %}
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/utility.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/ros/JSONProlog.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/iframes/replay-frame.js') }}"></script>
-{% endblock %}
-
-{% block content %}
+{% capture defaultcontent %}
+  <script type="text/javascript">
+    var LEFT_MENU_LIST=[];
+    var RIGHT_MENU_LIST=[];
+  </script>
+  
   <script type="text/javascript">
     var ui;
     
@@ -82,6 +90,12 @@
           ui.updateEndTime();
         });
     });
+
+    $(document).ready(function() {
+        if(parent.oeController.getFlaskUser().isAdmin()) {
+            $(".onlyAdmin").removeClass("onlyAdmin");
+        }
+    });
   </script>
   
   <div id="page-content" style="width:100%; height:100%;">
@@ -93,7 +107,7 @@
     <div class="ui-layout-west" id="replay-layout-west">
         <div class="content-box replay-box" id="replay-selection-box">
             <h1 class="content-box-header" onclick="ui.toggleContent('replay-selection-toggle', 'replay-episode-form')">
-                <image src="/static/images/shade.png"
+                <image src="static/images/shade.png"
                     class="content-box-toggle"
                     id="replay-selection-toggle"/> 
                 <a href="#">Video Selection</a>
@@ -106,15 +120,13 @@
                     </li></ul>
                 </div>
                 <button id="new-video-button" type="button" class="btn btn-lg btn-primary btn-block" onclick="ui.newVideo()">New</button><br>
-        {% if current_user.is_authenticated and current_user.has_role('admin') %}
-                <button id="del-video-button" type="button" class="btn btn-lg btn-primary btn-block" onclick="ui.deleteVideo()">Delete</button><br>
-        {% endif %}
+                <button id="del-video-button" type="button" class="btn btn-lg btn-primary btn-block onlyAdmin" onclick="ui.deleteVideo()">Delete</button><br>
             </form>
         </div>
             
         <div class="content-box replay-box replay-box-hidden" id="replay-configuration-box">
             <h1 class="content-box-header" onclick="ui.toggleContent('replay-configuration-toggle', 'replay-configuration-form')">
-                <image src="/static/images/unshade.png"
+                <image src="static/images/unshade.png"
                     class="content-box-toggle"
                     id="replay-configuration-toggle"/>
                 <a href="#">Settings</a>
@@ -156,16 +168,13 @@
                     <label for="user_query">Animation Query</label>
                     <div class="console_text" id="user_query"></div>
                 </div>
-                
-        {% if current_user.is_authenticated and current_user.has_role('admin') %}
-                <button id="save-video-button" type="button" class="btn btn-lg btn-primary btn-block" onclick="ui.saveVideoSettings()">Save</button><br>
-        {% endif %}
+                <button id="save-video-button" type="button" class="btn btn-lg btn-primary btn-block onlyAdmin" onclick="ui.saveVideoSettings()">Save</button><br>
             </form>
         </div>
             
         <div class="content-box replay-box replay-box-hidden" id="replay-panel-box">
             <h1 class="content-box-header" onclick="ui.toggleContent('replay-panel-toggle', 'replay-panel-form')">
-                <image src="/static/images/unshade.png"
+                <image src="static/images/unshade.png"
                     class="content-box-toggle"
                     id="replay-panel-toggle"/>
                 <a href="#">Replay</a>
@@ -182,5 +191,5 @@
         </div>
     </div>
   </div>
-
-{% endblock %}
+{% endcapture %}
+{% include default.html %}

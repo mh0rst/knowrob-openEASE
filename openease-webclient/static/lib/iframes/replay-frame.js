@@ -284,11 +284,11 @@ function KnowrobReplayUI(client, options) {
       var img = document.getElementById(imageId);
       if(obj.className == "form hidden-form") {
         obj.className = "form";
-        img.src = "/static/images/shade.png";
+        img.src = "static/images/shade.png";
       }
       else {
         obj.className = "form hidden-form";
-        img.src = "/static/images/unshade.png";
+        img.src = "static/images/unshade.png";
       }
     };
 
@@ -297,7 +297,7 @@ function KnowrobReplayUI(client, options) {
       var img = document.getElementById(imageId);
       if(obj.className == "form hidden-form") {
         obj.className = "form";
-        img.src = "/static/images/shade.png";
+        img.src = "static/images/shade.png";
       }
     };
     
