@@ -64,27 +64,11 @@
     var oeController = parent.controller;
     var controller = new KnowrobClientController();
     var client = new KnowrobClient();
-    oeController.setKonwrobController(controller);
+    oeController.setKnowrobController(controller);
     client.setOptions(oeController.getOptions(), controller.fireInitialized);
-
-    var webclientDescription = {
-        interfaces: [
-            { id: 'cog', name: 'Cognitive Capabilities', interfaces: [
-              { id: 'kb', name: 'Question Answering', src:'/knowrob' },
-              { id: 'replay', name: 'Episode Replay', src:'/video' }
-            ]},
-            { id: 'teach', name: 'Teaching', interfaces: [
-                //{ id: 'exercises', name: 'Exercises', src:'/teaching' },
-                { id: 'tutorials', name: 'Tutorials', src:'/tutorials' }
-            ]}
-        ]
-    };
     frameControl = oeController.getFrameControl();
-    menu = oeController.getMenu();
     controller.onClientInitialization(frameControl.on_register_nodes_all);
     $(document).ready(function () {
-        menu.update_webclient_interfaces(webclientDescription.interfaces)
-        frameControl.init(webclientDescription.interfaces);
         client.init();
     });
 </script>

@@ -24,7 +24,7 @@ __author__ = 'danielb@cs.uni-bremen.de'
 # TODO: remove "/knowrob" prefix in some routes or replace by "/kb"
 @app.route('/static/<path:filename>')
 @app.route('/knowrob/static/<path:filename>')
-@app.route('/webclient/static/<path:filename>')
+@app.route('/webclient/default/static/<path:filename>')
 def download_static(filename):
     return send_from_directory(os.path.join(app.root_path, "static"), filename)
 
@@ -51,10 +51,13 @@ def transfer_logged_memory(filename):
 def knowrob(category=None, exp=None):
     if not ensure_application_started('openease/'+ROS_DISTRIBUTION+'-knowrob-daemon'):
         return redirect(url_for('user.logout'))
-    session['video'] = False
     return __knowrob_page__('knowrob_simple.html', session['user_container_name'], category, exp)
 
-@app.route('/webclient')
+@app.route('/webclient/default/webclient-description.json')
+def description():
+    return send_from_directory(os.path.join(app.root_path, "static"), "lib/webclient-description.json")
+
+@app.route('/webclient/default/client_frame.html')
 def client_frame():
     return render_template('client_frame.html', **locals())
 
@@ -64,7 +67,6 @@ def client_frame():
 def video(category=None, exp=None):
     if not ensure_application_started('openease/'+ROS_DISTRIBUTION+'-knowrob-daemon'):
         return redirect(url_for('user.logout'))
-    session['video'] = True
     return __knowrob_page__('video.html', session['user_container_name'], category, exp)
 
 def __knowrob_page__(template, container_name, category=None, exp=None):

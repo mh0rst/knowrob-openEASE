@@ -17,7 +17,8 @@
     var auth = '{{ authentication }}';
     var wsproto = 'ws' + (location.protocol === 'https:'?'s':'');
     var rosUrl = wsproto + '://{{ host_url }}/ws/{{ container_name }}/';
-    var controller = new OpenEASEController();
+    var clientBaseURL = '/webclient';
+    var controller = new OpenEASEController(clientBaseURL);
     var frameControl = new FrameControl({
             menu: menu,
             common_user_interfaces: COMMON_OPENEASE_USER_IFACES
@@ -35,15 +36,15 @@
             require_episode: true,
             use_console_overlay: true
     });
+
     $(document).ready(function () {
         frameControl.setOEWindow(window);
         frameControl.createOverlay();
         frameControl.showPageOverlay("Loading openEASE");
-        var clientFrameWindow = document.getElementById('client-frame').contentWindow;
-        frameControl.setClientFrameWindow(clientFrameWindow);
-        $(window).load(frameControl.updateLocation);
+        controller.setClientFrame(document.getElementById('client-frame'));
+        controller.switchClient('default');
         $(window).bind('hashchange', frameControl.updateLocation);
     });
   </script>
-  <iframe id="client-frame" src="/webclient"></iframe>
+  <iframe id="client-frame" src=""></iframe>
 {% endblock %}

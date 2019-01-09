@@ -54,10 +54,11 @@
         this.isAdmin = function() {
             return '{{ current_user.is_authenticated and current_user.has_role("admin") }}' == 'True';
         };
-    };
+    }
     var flask_user = new FlaskUser();
     var menu = new KnowrobMenu(flask_user, COMMON_OPENEASE_USER_IFACES);
 
+    // TODO retrieve this from the database mapping/default container
     var webclientDescription = {
         interfaces: [
             { id: 'cog', name: 'Cognitive Capabilities', interfaces: [
@@ -69,7 +70,7 @@
                 { id: 'tutorials', name: 'Tutorials', src:'/tutorials' }
             ]}
         ]
-    }
+    };
     $(document).ready(menu.update_webclient_interfaces(webclientDescription.interfaces));
   </script>
   

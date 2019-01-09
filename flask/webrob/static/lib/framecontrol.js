@@ -11,11 +11,11 @@ function FrameControl(options){
     // User interface names (e.g., editor, memory replay, ...)
     this.common_user_interfaces = options.common_user_interfaces || [];
 
-    this.webclient_user_interfaces = [];
-
     this.user_interfaces = [];
 
     this.user_interfaces_flat = [];
+
+    this.waiting_frames = [];
 
     this.pageOverlayDisabled = false;
 
@@ -37,24 +37,10 @@ function FrameControl(options){
     };
 
     this.init = function(webclient_user_interfaces) {
-        if(!that.initialized) {
-            that.initialized = true;
-            that.update_webclient_frames(webclient_user_interfaces);
-            createFrames(that.common_user_interfaces);
-        }
-    };
-
-    this.update_webclient_frames = function(webclient_user_interfaces) {
-        for(var i in that.webclient_user_interfaces) {
-            var id = that.webclient_user_interfaces[i].id + '-frame';
-            var element = that.clientFrameWindow.document.getElementById(id);
-            element.parentNode.removeChild(element);
-        }
         that.user_interfaces = webclient_user_interfaces.concat(that.common_user_interfaces);
-        that.webclient_user_interfaces = webclient_user_interfaces;
         that.update_flat();
         createFrames(webclient_user_interfaces);
-
+        createFrames(that.common_user_interfaces);
     };
 
     this.update_flat = function() {
@@ -83,6 +69,15 @@ function FrameControl(options){
                 frame.src = elem.src;
             else continue;
             that.clientFrameWindow.document.getElementById('page').appendChild(frame);
+            that.waiting_frames.push(elem.id);
+            $(frame).load(that.onCompletelyLoaded.bind(undefined, elem.id));
+        }
+    }
+
+    this.onCompletelyLoaded = function(loadedElement) {
+        that.waiting_frames.splice(that.waiting_frames.indexOf(loadedElement), 1);
+        if(that.waiting_frames.length == 0) {
+            that.updateLocation();
         }
     }
 
