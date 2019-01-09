@@ -1,33 +1,19 @@
-{% extends "layout.html" %}
-
-{% block head %}
+---
+# Main openEASE Webclient frame
+layout: default
+---
+{% capture additionalhead %}
   <link rel="stylesheet" type="text/css" href="static/lib/font/font.css" />
   <link rel="stylesheet" type="text/css" href="static/css/screen.css"/>
   <link rel="stylesheet" type="text/css" href="static/css/layout-default-1.4.0.css" />
   <link rel="stylesheet" type="text/css" href="static/css/user.css"/>
   <link rel="stylesheet" type="text/css" href="static/css/dat.gui.css"/>
 
-  <script type="text/javascript" src="static/openease.js"></script>
+
   <script type="text/javascript" src="static/lib/EASE.js"></script>
-
-  <script type="text/javascript" src="static/lib/chart/google-jsapi.js"></script>
-  <script type="text/javascript" src="static/lib/chart/DonutChart.js"></script>
-  <script type="text/javascript" src="static/lib/chart/BarChart.js"></script>
-  <script type="text/javascript" src="static/lib/chart/TreeDiagram.js"></script>
-  <script type="text/javascript" src="static/lib/chart/Timeline.js"></script>
-  <script type="text/javascript" src="static/lib/chart/DataVisClient.js"></script>
-  <script type="text/javascript" src="static/lib/chart/TaskTreeVisClient.js"></script>
-  <script type="text/javascript" src="static/lib/chart/array-nonstandard.js"></script>
-  <script type="text/javascript" src="static/lib/chart/Control.js"></script>
-
-  <script type="text/javascript" src="static/lib/utility.js"></script>
-
-  <script type="text/javascript" src="static/lib/ros/JSONProlog.js"></script>
   <script type="text/javascript" src="static/lib/ros/MarkerArrayClient.js"></script>
-
   <script type="text/javascript" src="static/lib/knowrobController.js"></script>
   <script type="text/javascript" src="static/lib/canvas.js"></script>
-  <script type="text/javascript" src="static/lib/console.js"></script>
   <script type="text/javascript" src="static/lib/knowrobClient.js"></script>
   <script type="text/javascript" src="static/lib/episode.js"></script>
   <script type="text/javascript" src="static/lib/menu.js"></script>
@@ -56,22 +42,22 @@
 
   <script type="text/javascript" src="static/lib/designator/desig.js"></script>
   <script type="text/javascript" src="static/lib/designator/adt.js"></script>
-{% endblock %}
+{% endcapture %}
 
-{% block content %}
-  
-<script type="text/javascript">
-    var oeController = parent.controller;
-    var controller = new KnowrobClientController();
-    var client = new KnowrobClient();
-    oeController.setKnowrobController(controller);
-    client.setOptions(oeController.getOptions(), controller.fireInitialized);
-    frameControl = oeController.getFrameControl();
-    controller.onClientInitialization(frameControl.on_register_nodes_all);
-    $(document).ready(function () {
-        client.init();
-    });
-</script>
+{% capture knowrobcontent %}
+  <script type="text/javascript">
+      var oeController = parent.controller;
+      var controller = new KnowrobClientController();
+      var client = new KnowrobClient();
+      oeController.setKnowrobController(controller);
+      client.setOptions(oeController.getOptions(), controller.fireInitialized);
+      frameControl = oeController.getFrameControl();
+      controller.onClientInitialization(frameControl.on_register_nodes_all);
+      $(document).ready(function () {
+          client.init();
+      });
+  </script>
 
-<div class="page" id="page" />
-{% endblock %}
+  <div class="page" id="page" />
+{% endcapture %}
+{% include knowrob_base.html %}

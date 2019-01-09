@@ -1,0 +1,32 @@
+{
+  "entrypage": "client_frame.html",
+  "interfaces": [
+    {
+      "id": "cog",
+      "name": "Cognitive Capabilities",
+      "interfaces": [
+        {
+          "id": "kb",
+          "name": "Question Answering",
+          "src": "/knowrob"
+        },
+        {
+          "id": "replay",
+          "name": "Episode Replay",
+          "src": "/video"
+        }
+      ]
+    },
+    {
+      "id": "teach",
+      "name": "Teaching",
+      "interfaces": [
+        {
+          "id": "tutorials",
+          "name": "Tutorials",
+          "src": "/tutorials"
+        }
+      ]
+    }
+  ]
+}

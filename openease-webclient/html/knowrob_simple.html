@@ -1,0 +1,227 @@
+---
+# openEASE Webclient - Cognitive Capabilities - Question Answering
+layout: default
+---
+{% capture additionalhead %}
+  <link rel="stylesheet" type="text/css" href="static/css/dat.gui.css"/>
+{% endcapture %}
+
+{% capture knowrobcontent %}
+  {% include knowrob_commonjs.html %}
+  <script type="text/javascript">
+      var datgui;
+      var datgui_added = false;
+
+      function showMarkerMenu(marker) {};
+
+      function on_episode_selected(lib) {
+          ui.initQueryLibrary(lib.query);
+          // initialize canvas
+          ui.initCanvas();
+          ui.resizeCanvas();
+          // TODO(daniel): retract all user asserted facts!
+      };
+      
+      function on_register_nodes(client) {
+          var activeClient = client === undefined ? knowrobClient : client;
+          visClient = new DataVisClient({
+              ros: activeClient.ros,
+              containerId: '#chart',
+              topic: 'data_vis_msgs'
+          });
+          graphClient = new TaskTreeVisClient({
+              ros: activeClient.ros,
+              containerId: '#designator',
+              topic: 'task_tree_msgs'
+          });
+      };
+
+      function resize() {
+        var knowrobLayout = $('#page-content').layout({
+          stateManagement__enabled: true,
+          south: {
+            minSize: 60,
+            maxSize: 60
+          },
+          west: {
+            minSize: 250,
+            size: 500,
+            // INNER-LAYOUT
+            childOptions: {
+              center: {
+                paneSelector: "#console",
+                onresize: function() {
+                  ace.edit("history").resize(true);
+                  ace.edit("user_query").resize(true);
+                },
+                minSize: 250
+              },
+              south: {
+                paneSelector: "#library",
+                minSize: 150
+              }
+            }
+          },
+          center: {},
+          east: {
+            minSize: 250,
+            size: 500,
+            initClosed: true,
+            // INNER-LAYOUT
+            childOptions: {
+              center: {
+                paneSelector: "#designator",
+                minSize: 250
+              },
+              south: {
+                paneSelector: "#mjpeg",
+                minSize: 150,
+                onresize: function() {
+                  $('#mjpeg').resize();
+                }
+              }
+            }
+          }
+        });
+        var centerLayout = $('#editor-container').layout({
+              center: {
+                paneSelector: "#markers",
+                onresize: function() {
+                 if( ui ) ui.resizeCanvas();
+                },
+                minSize: 50
+              },
+              south: {
+                paneSelector: "#chart",
+                initClosed: true,
+                minSize: 50
+              }
+        });
+        ui.resizeCanvas();
+        
+        $('#designator').change(function() { knowrobLayout.open('east'); });
+        $('#mjpeg').change(function() { knowrobLayout.open('east'); });
+        $('#chart').change(function() { centerLayout.open('south'); });
+      };
+      
+      function datgui(){
+          if(datgui_added) return;
+          datgui_added = true;
+          document.getElementById('markers').appendChild(datgui.domElement);
+      };
+
+      parent.controller.onClientInitialization(function (client) {
+          knowrobClient = client;
+          $(document).ready(function () {
+              ui = new KnowrobUI(client, {
+                  use_console_overlay: true
+              });
+              ui.init();
+              resize();
+              // make sure editor size is also updated
+              ace.edit("history").resize(true);
+              ace.edit("user_query").resize(true);
+
+              datgui = new dat.GUI({autoPlace: false});
+              datgui.domElement.id = 'datgui';
+
+              if(client.nodesRegistered && !visClient) {
+                  on_register_nodes();
+              }
+          });
+      });
+      
+      LEFT_MENU_LIST.push({
+          text: "Settings",
+          submenu: [{ text: 'Canvas', id: 'datgui-menu', onclick: datgui}]
+      });
+  </script>
+
+  <div id="page-content">
+      <div class="ui-layout-center" id="editor-container">
+          <div id="markers"></div>
+          <div id="chart"></div>  
+      </div>
+
+      <div class="ui-layout-west">
+          <div id="console">
+              <div id="console_top">
+                  <div class="console_text" id="history"></div>
+                  <div class="console_text" id="user_query">member(A, [a,b,c]).</div>
+              </div>
+              <div id="console_bottom">
+                  <div id="query_buttons">
+                      <ul class="query_button_group query_button_left">
+                          <li><a href="#" class="query_button icon_question" id="btn_query" onclick="ui.console.query()" title="Ask a query (ctrl+enter)"></a></li>
+                          <li><a href="#" class="query_button icon_redo" id="btn_query_next" onclick="ui.console.nextSolution()" title="Infer next solution"></a></li>
+                      </ul>
+                      <ul class="query_button_group query_button_right">
+                          <li><a href="#" class="query_button icon_zoom_in" id="btn_zoom_in" onclick="ui.console.zoomIn()"></a></li>
+                          <li><a href="#" class="query_button icon_zoom_out" id="btn_zoom_out" onclick="ui.console.zoomOut()"></a></li>
+                      </ul>
+                  </div>
+              </div>
+          </div>
+          <div id="library">
+              <div id="library_top">
+                  <div id="library_content"></div>
+              </div>
+              <div id="library_bottom">
+                  <div id="library_buttons">
+                      <ul class="query_button_group">
+                          <li><a href="#" class="query_button admin_button icon_edit" id="btn_query_edit" onclick="ui.editLibrary()" title="Edit the query library"></a></li>
+                          <li><a href="#" class="query_button admin_button icon_diff" id="btn_query_diff" onclick="ui.diffQueries()" title="Diff the query library against the openEASE server"></a></li>
+                          <li class="onlyAdmin"><a href="#" class="query_button admin_button icon_download" id="btn_query_download" onclick="ui.downloadQueries()" title="Download the query library from the FTP server"></a></li>
+                          <li class="onlyAdmin"><a href="#" class="query_button admin_button icon_upload" id="btn_query_upload" onclick="ui.uploadQueries()" title="Upload the query library to the FTP server"></a></li>
+                          <li><a href="#" class="query_button admin_button icon_reset" id="btn_query_reset" onclick="ui.initQueryLibrary()" title="Reset to the episode query library"></a></li>
+                      </ul>
+                  </div>
+              </div>
+          </div>
+      </div>
+    
+      <div class="ui-layout-east">
+          <div id="designator"></div>
+          <div id="mjpeg"></div>
+      </div>
+      
+      <div class="pane ui-layout-south">
+          <div id="logo_container">            
+              <a href="http://www.robohow.eu" class="media" title="http://www.robohow.eu"  rel="nofollow">
+                  <img src="{{ url_for('static', filename='logos/robohow-logo.png') }}" class="media" alt="" />
+              </a>
+              <a href="http://www.roboearth.org" class="media" title="http://www.roboearth.org"  rel="nofollow">
+                  <img src="{{ url_for('static', filename='logos/roboearth-logo.png') }}" class="media" alt="" />
+              </a>
+              <a href="http://www.sherpa-project.eu" class="media" title="http://www.sherpa-project.eu"  rel="nofollow">
+                  <img src="{{ url_for('static', filename='logos/sherpa-logo.png') }}" class="media" alt="" />
+              </a>
+              <a href="http://ease-crc.org/" class="media" title="http://ease-crc.org/"  rel="nofollow">
+                  <img src="{{ url_for('static', filename='logos/ease.png') }}" height="60" hspace="35" alt="" />
+              </a>
+              <a href="http://www.saphari.eu" class="media" title="http://www.saphari.eu"  rel="nofollow">
+                  <img src="{{ url_for('static', filename='logos/saphari-logo.png') }}" class="media" alt="" />
+              </a>    
+              <a href="http://www.acat-project.eu/" class="media" title="http://www.acat-project.eu/"  rel="nofollow">
+                  <img src="{{ url_for('static', filename='logos/acat-logo.png') }}" class="media" alt="" />
+              </a>
+              <a href="http://cordis.europa.eu/fp7/ict/programme/challenge2_en.html" class="media" title="http://cordis.europa.eu/fp7/ict/programme/challenge2_en.html"  rel="nofollow">
+                  <img src="{{ url_for('static', filename='logos/fp7-logo.png') }}" class="media" alt="" />
+              </a>
+              <a href="http://dfg.de/" class="media" title="http://dfg.de/"  rel="nofollow">
+                  <img src="{{ url_for('static', filename='logos/dfg.jpg') }}" class="media" alt="" />
+              </a>
+          <div>
+      </div>
+  </div>
+      
+  <div id="library-editor" class="modal">
+    <div class="modal-content">
+        <span class="library-editor-header"></span>
+        <span class="library-editor-button icon_close"></span>
+        <span class="library-editor-button icon_add"></span>
+        <div id="library-editor-content"></div>
+    </div>
+  </div>
+{% endcapture %}
+{% include knowrob_base.html %}

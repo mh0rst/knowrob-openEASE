@@ -1,32 +1,15 @@
-{% extends "layout.html" %}
+---
+# openEASE Webclient - Teaching - Tutorials
+layout: default
+---
+{% capture additionalhead %}
+  <script type="text/javascript" src="static/lib/iframes/teaching.js"></script>
+{% endcapture %}
 
-{% block head %}
-  <script type="text/javascript" src="{{ url_for('static', filename='openease.js') }}"></script>
-  
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/ros/JSONProlog.js') }}"></script>
-
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/google-jsapi.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/DonutChart.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/BarChart.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/TreeDiagram.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/Timeline.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/DataVisClient.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/TaskTreeVisClient.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/array-nonstandard.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/chart/Control.js') }}"></script>
-  
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/utility.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/console.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/iframes/kb-frame.js') }}"></script>
-  <script type="text/javascript" src="{{ url_for('static', filename='lib/iframes/teaching.js') }}"></script>
-{% endblock %}
-
-{% block content %}
+{% capture knowrobcontent %}
+  {% include knowrob_commonjs.html %}
   <script type="text/javascript">
-    var ui;
-    var visClient, graphClient;
     var current_exercise_id = 0;
-    var knowrobClient;
     
     parent.controller.onClientInitialization(function (client) {
         knowrobClient = client;
@@ -43,44 +26,6 @@
             on_register_nodes();
         }
     });
-    
-    function selectMarker(marker) {
-        var prolog = knowrobClient.newProlog();
-        prolog.jsonQuery("term_to_atom("+marker.ns+",MarkerName), "+
-            "marker_queries(MarkerName, MarkerQueries).",
-            function(result) {
-                prolog.finishClient();
-                ui.loadObjectQueries(result.solution.MarkerQueries);
-            }
-        );
-    };
-    function unselectMarker() {
-        ui.initQueryLibrary();
-    };
-    function removeMarker(marker) {
-        if(marker === knowrobClient.selectedMarker) {
-            unselectMarker();
-        }
-    };
-    
-    function on_designator_received(obj) {
-      $('#designator').html('');
-      $('#designator').append(obj);
-      $('#designator').change();
-    };
-    
-    function on_image_received(imageHtml, imageWidth, imageHeight) {
-        ui.imageWidth = imageWidth;
-        ui.imageHeight = imageHeight;
-        
-        document.getElementById('mjpeg').innerHTML = imageHtml;
-        $('#mjpeg').change();
-        $('#mjpeg').resize();
-    };
-    
-    function on_camera_pose_received(pose) {
-        ui.setCameraPose(pose);
-    };
     
     function on_register_nodes(client) {
         var activeClient = client === undefined ? knowrobClient : client;
@@ -246,7 +191,7 @@
         </div>
         <div id="chart">
 This pane can visualize statistical data using different chart types.
-        </div>	
+        </div>  
     </div>
 
     <div class="ui-layout-west">
@@ -281,5 +226,5 @@ by openEASE episode replay).
     
     <div id="dom-highlight">
 </div>
-  
-{% endblock %}
+{% endcapture %}
+{% include knowrob_base.html %}

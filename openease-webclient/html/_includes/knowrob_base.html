@@ -1,0 +1,28 @@
+{% capture head %}
+  <script type="text/javascript" src="static/openease.js"></script>
+  <script type="text/javascript" src="static/lib/ros/JSONProlog.js"></script>
+
+  <script type="text/javascript" src="static/lib/chart/google-jsapi.js"></script>
+  <script type="text/javascript" src="static/lib/chart/DonutChart.js"></script>
+  <script type="text/javascript" src="static/lib/chart/BarChart.js"></script>
+  <script type="text/javascript" src="static/lib/chart/TreeDiagram.js"></script>
+  <script type="text/javascript" src="static/lib/chart/Timeline.js"></script>
+  <script type="text/javascript" src="static/lib/chart/DataVisClient.js"></script>
+  <script type="text/javascript" src="static/lib/chart/TaskTreeVisClient.js"></script>
+  <script type="text/javascript" src="static/lib/chart/array-nonstandard.js"></script>
+  <script type="text/javascript" src="static/lib/chart/Control.js"></script>
+  
+  <script type="text/javascript" src="static/lib/utility.js"></script>
+  <script type="text/javascript" src="static/lib/console.js"></script>
+  <script type="text/javascript" src="static/lib/iframes/kb-frame.js"></script>
+  {{ additionalhead }}
+{% endcapture %}
+
+{% capture defaultcontent %}
+  <script type="text/javascript">
+    var LEFT_MENU_LIST=[];
+    var RIGHT_MENU_LIST=[];
+  </script>
+  {{ knowrobcontent }}
+{% endcapture %}
+{% include default.html %}

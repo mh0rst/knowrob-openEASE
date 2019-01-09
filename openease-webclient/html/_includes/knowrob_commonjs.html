@@ -1,0 +1,45 @@
+  <script type="text/javascript">
+    var ui;
+    var visClient, graphClient;
+    var knowrobClient;
+
+    function selectMarker(marker) {
+        var prolog = parent.client.newProlog();
+        prolog.jsonQuery("term_to_atom("+marker.ns+",MarkerName), "+
+            "marker_queries(MarkerName, MarkerQueries).",
+            function(result) {
+                prolog.finishClient();
+                ui.loadObjectQueries(result.solution.MarkerQueries);
+            }
+        );
+    };
+
+    function unselectMarker() {
+        ui.initQueryLibrary();
+    };
+
+    function removeMarker(marker) {
+        if(marker === parent.client.selectedMarker) {
+            unselectMarker();
+        }
+    };
+
+    function on_designator_received(obj) {
+      $('#designator').html('');
+      $('#designator').append(obj);
+      $('#designator').change();
+    };
+
+    function on_image_received(imageHtml, imageWidth, imageHeight) {
+        ui.imageWidth = imageWidth;
+        ui.imageHeight = imageHeight;
+        
+        document.getElementById('mjpeg').innerHTML = imageHtml;
+        $('#mjpeg').change();
+        $('#mjpeg').resize();
+    };
+
+    function on_camera_pose_received(pose) {
+        ui.setCameraPose(pose);
+    };
+  </script>

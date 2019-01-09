@@ -49,12 +49,6 @@ function OpenEASEController(webclientBaseURL) {
         });
     };
 
-    this.executeProlog = function (query, callback) {
-        if(that.kbController !== undefined) {
-            that.kbController.executeProlog(query, callback);
-        }
-    };
-
     this.setEpisode = function(category, episode) {
         if(that.kbController !== undefined) {
             that.kbController.setEpisode(category, episode);
