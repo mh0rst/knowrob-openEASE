@@ -137,8 +137,8 @@ function KnowrobClient(){
               that.authenticate(authURL, that.onRosConnected.bind(undefined, postInitialConnect));
           } else {
               // No authentication requested, call registerNodes directly
-              that.onRosConnected(postInitialConnect);
               that.waitForJsonProlog();
+              that.onRosConnected(postInitialConnect);
           }
       });
       that.ros.on('close', function() {
@@ -155,6 +155,12 @@ function KnowrobClient(){
       });
       that.ros.on('error', function(error) {
           console.log('Error connecting to websocket server: ', error);
+          $.ajax({
+            url: '/knowrob/ensure_started',
+            type: "GET",
+            contentType: "application/json",
+            dataType: "json"
+          });
           var retryTarget = that.connect.bind(undefined, postInitialConnect);
           if(that.isFirstSuccessfulConnection) {
               that.frameControl.showPageOverlay("Connection error, reconnecting...");
@@ -187,19 +193,22 @@ function KnowrobClient(){
             }
             console.log("Sending auth token");
             that.ros.authenticate(request.mac,
-                             request.client,
-                             request.dest,
-                             request.rand,
-                             request.t,
-                             request.level,
-                             request.end);
+                                  request.client,
+                                  request.dest,
+                                  request.rand,
+                                  request.t,
+                                  request.level,
+                                  request.end);
             that.isAuthenticated = true;
             
-            // If a callback function was specified, call it in the context of Knowrob class (that)
-            if(then) {
-                then.call(that);
-            }
-            that.waitForJsonProlog();
+            // Wait half a second for the authentication to settle
+            setTimeout(function() {
+              that.waitForJsonProlog();
+              // If a callback function was specified, call it in the context of Knowrob class (that)
+              if(then) {
+                  then.call(that);
+              }
+            }, 500);
         });
     };
     
