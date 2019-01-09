@@ -42,4 +42,10 @@
     function on_camera_pose_received(pose) {
         ui.setCameraPose(pose);
     };
+
+    $(document).ready(function() {
+        if(parent.oeController.getFlaskUser().isAdmin()) {
+            $(".onlyAdmin").removeClass("onlyAdmin");
+        }
+    });
   </script>

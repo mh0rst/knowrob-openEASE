@@ -10,15 +10,18 @@ function OpenEASEController(webclientBaseURL) {
 
     this.menu = undefined;
 
+    this.flask_user = undefined;
+
     this.clientFrame = undefined;
 
     this.setClientOptions = function (options) {
         that.clientOptions = options;
     };
 
-    this.setPageControls = function (frameControl, menu) {
+    this.setPageControls = function (frameControl, menu, flask_user) {
         that.frameControl = frameControl;
         that.menu = menu;
+        that.flask_user = flask_user;
     };
 
     this.setClientFrame = function (frame) {
@@ -36,6 +39,11 @@ function OpenEASEController(webclientBaseURL) {
     this.getFrameControl = function () {
         return that.frameControl;
     };
+
+    this.getFlaskUser = function () {
+        return that.flask_user;
+    };
+
 
     this.switchClient = function(name) {
         $.getJSON(that.baseURL+'/'+name+'/webclient-description.json', '', function (response) {

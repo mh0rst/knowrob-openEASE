@@ -44,7 +44,7 @@ def transfer_logged_memory(filename):
 
 
 # FIXME: iframe does not work standalone right now, redirect to "/#kb" when used without parent frame
-# TODO delete knowrob routes, replace exp preselection and ensure_application_started
+# TODO delete knowrob routes, replace exp preselection
 @app.route('/kb/')
 @app.route('/knowrob/')
 @app.route('/knowrob/exp/<category>/<exp>')
@@ -53,7 +53,7 @@ def knowrob(category=None, exp=None):
         return redirect(url_for('user.logout'))
     return __knowrob_page__('knowrob_simple.html', session['user_container_name'], category, exp)
 
-# TODO delete routes, replace exp preselection and ensure_application_started
+# TODO delete routes, replace exp preselection
 @app.route('/replay')
 @app.route('/video')
 @app.route('/video/exp/<category>/<exp>')
