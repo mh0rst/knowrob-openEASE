@@ -17,6 +17,13 @@ layout: default
   
   <script type="text/javascript">
     var ui;
+    var pageLayout = undefined;
+
+    function onSwitchFrame() {
+        if(pageLayout !== undefined) {
+            pageLayout.resizeAll();
+        }
+    }
     
     function on_episode_selected(lib) {
         // stop replay if active
@@ -33,7 +40,7 @@ layout: default
     };
     
     function resize() {
-      $('#page-content').layout({
+      pageLayout = $('#page-content').layout({
         stateManagement__enabled: true,
         south: {
           minSize: 60

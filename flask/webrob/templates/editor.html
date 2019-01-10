@@ -11,9 +11,17 @@
     var activeFile;
     var ignoreChanges = false;
     var hasChanges = false;
+
+    var pageLayout = undefined;
+
+    function onSwitchFrame() {
+        if(pageLayout !== undefined) {
+            pageLayout.resizeAll();
+        }
+    }
     
     function resize() {
-      $('#page-content').layout({
+      pageLayout = $('#page-content').layout({
         center__maskContents:  true,
         west__maskContents:  true,
         south: { minSize: 75 },

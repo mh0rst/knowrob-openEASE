@@ -11,6 +11,17 @@ layout: default
   <script type="text/javascript">
       var datgui;
       var datgui_added = false;
+      var knowrobLayout = undefined;
+      var centerLayout = undefined;
+
+      function onSwitchFrame() {
+          if(knowrobLayout !== undefined) {
+              knowrobLayout.resizeAll();
+          }
+          if(centerLayout !== undefined) {
+              centerLayout.resizeAll();
+          }
+      }
 
       function showMarkerMenu(marker) {};
 
@@ -37,7 +48,7 @@ layout: default
       };
 
       function resize() {
-        var knowrobLayout = $('#page-content').layout({
+        knowrobLayout = $('#page-content').layout({
           stateManagement__enabled: true,
           south: {
             minSize: 60,
@@ -83,7 +94,7 @@ layout: default
             }
           }
         });
-        var centerLayout = $('#editor-container').layout({
+        centerLayout = $('#editor-container').layout({
               center: {
                 paneSelector: "#markers",
                 onresize: function() {

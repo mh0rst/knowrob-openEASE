@@ -10,6 +10,17 @@ layout: default
   {% include knowrob_commonjs.html %}
   <script type="text/javascript">
     var current_exercise_id = 0;
+    var pageLayout = undefined;
+    var centerLayout = undefined;
+
+    function onSwitchFrame() {
+        if(pageLayout !== undefined) {
+            pageLayout.resizeAll();
+        }
+        if(centerLayout !== undefined) {
+            centerLayout.resizeAll();
+        }
+    }
     
     parent.controller.onClientInitialization(function (client) {
         knowrobClient = client;
@@ -21,7 +32,7 @@ layout: default
             loadTutorial('overview', 1);
             resize();
         });
-        
+
         if(client.nodesRegistered && !visClient) {
             on_register_nodes();
         }
@@ -43,7 +54,7 @@ layout: default
     };
 
     function resize() {
-        var pageLayout = $('#page-content').layout({
+        pageLayout = $('#page-content').layout({
             stateManagement__enabled: true,
             south: { minSize: 60 },
             west: {

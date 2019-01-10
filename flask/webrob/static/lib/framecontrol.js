@@ -186,6 +186,9 @@ function FrameControl(options){
         $("#"+frame_name+"-menu", that.openEASEWindow.document).addClass("selected-menu");
         // Load menu items of active frame
         that.menu.updateFrameMenu(that.clientFrameWindow.document.getElementById(frame_name+"-frame").contentWindow);
+        if(frame.contentWindow.onSwitchFrame !== undefined) {
+            frame.contentWindow.onSwitchFrame();
+        }
     };
 
     this.getActiveFrame = function() {
