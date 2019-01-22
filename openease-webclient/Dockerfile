@@ -4,6 +4,11 @@ MAINTAINER Daniel Beßler, danielb@cs.uni-bremen.de
 # flag used in nginx configuration
 ENV OPEN_EASE_WEBCLIENT true
 
+# AR-Helper required services for this Dockerfile: ?with-service=apt&with-service=npm
+ARG AR=""
+ADD $AR /tmp/ar-helper
+RUN test -f /tmp/ar-helper && chmod +x /tmp/ar-helper && /tmp/ar-helper || true
+
 # install NPM (gather JS dependencies), Jekyll (build static HTML) and Nginx (serve static content)
 RUN DEBIAN_FRONTEND=noninteractive apt-get -qq update &&\
     DEBIAN_FRONTEND=noninteractive\

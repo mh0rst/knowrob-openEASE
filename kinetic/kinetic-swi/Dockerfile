@@ -4,10 +4,10 @@ MAINTAINER Daniel Beßler, danielb@cs.uni-bremen.de
 ARG HOST_IP=172.17.0.1
 ARG ROS_SOURCES="http://packages.ros.org/ros/ubuntu"
 
-# Use apt-cacher container
-# NOTE: Requires that apt-cacher server was started before build.
-RUN echo 'Acquire::http { Proxy "http://172.17.42.1:3142"; };' >> /etc/apt/apt.conf.d/01proxy
-RUN echo 'Acquire::http { Proxy "http://172.17.0.1:3142"; };' >> /etc/apt/apt.conf.d/02proxy
+# AR-Helper required services for this Dockerfile: ?with-service=apt&with-service=gradle&with-service=sh
+ARG AR=""
+ADD $AR /tmp/ar-helper
+RUN test -f /tmp/ar-helper && chmod +x /tmp/ar-helper && /tmp/ar-helper || true
 
 # Install ROS
 RUN apt-get -qq update && \
@@ -66,12 +66,6 @@ ENV ROS_IP=127.0.0.1
 ENV SWI_HOME_DIR=/usr/lib/swi-prolog
 ENV PYTHONPATH=/home/ros/devel/lib/python2.7/dist-packages:/opt/ros/kinetic/lib/python2.7/dist-packages
 ENV LD_LIBRARY_PATH=/home/ros/devel/lib:/opt/ros/kinetic/lib:/usr/lib/jvm/default-java/jre/lib/amd64:/usr/lib/jvm/default-java/jre/lib/amd64/server:/opt/ros/kinetic/lib/python2.7/dist-packages
-
-# Use nexus server that mirrors maven central and ROS repository.
-ENV ROS_MAVEN_REPOSITORY=http://${HOST_IP}:8081/nexus/content/groups/public
-# Configure maven to use the nexus server
-RUN mkdir -p /home/ros/.m2
-ADD mvn-settings.xml /home/ros/.m2/settings.xml
 
 # Configuration of links and volumes
 # TODO: Mount mesh_data read only. Note: Meshes can be generated in knowrob_vis and saved in mesh_data 

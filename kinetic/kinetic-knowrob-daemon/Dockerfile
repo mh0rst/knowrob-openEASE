@@ -1,6 +1,11 @@
 FROM openease/kinetic-swi
 MAINTAINER Daniel Beßler, danielb@cs.uni-bremen.de
 
+# AR-Helper required services for this Dockerfile: ?with-service=apt&with-service=gradle&with-service=sh
+ARG AR=""
+ADD $AR /tmp/ar-helper
+RUN test -f /tmp/ar-helper && chmod +x /tmp/ar-helper && /tmp/ar-helper || true
+
 # Initialize the catkin workspace
 USER ros
 WORKDIR /home/ros/src

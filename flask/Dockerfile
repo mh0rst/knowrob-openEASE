@@ -1,6 +1,11 @@
 FROM ubuntu:16.04
 MAINTAINER Daniel Beßler, danielb@cs.uni-bremen.de
 
+# AR-Helper required services for this Dockerfile: ?with-service=apt&with-service=pip&with-service=npm
+ARG AR=""
+ADD $AR /tmp/ar-helper
+RUN test -f /tmp/ar-helper && chmod +x /tmp/ar-helper && /tmp/ar-helper || true
+
 # install python and flask
 RUN DEBIAN_FRONTEND=noninteractive apt-get -qq update &&\
     DEBIAN_FRONTEND=noninteractive\
