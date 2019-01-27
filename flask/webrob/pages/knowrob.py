@@ -75,11 +75,6 @@ def __knowrob_page__(template, container_name, category=None, exp=None):
     exp_url = get_experiment_download_url()
     return render_template(template, **locals())
 
-@app.route('/knowrob/ensure_started')
-def ensure_started():
-    ensure_application_started('openease/'+ROS_DISTRIBUTION+'-knowrob-daemon')
-    return jsonify(result=None)
-
 @app.route('/knowrob/menu', methods=['POST'])
 def menu():
     # Maps projects to list of experiments
@@ -138,11 +133,6 @@ def menu():
     }]
     
     return jsonify(menu_left=menu_left, menu_right=menu_right)
-
-@app.route('/knowrob/reset', methods=['POST'])
-def reset_knowledge_base():
-  restart_application()
-  return jsonify(result=None)
 
 @app.route('/knowrob/add_history_item', methods=['POST'])
 def add_history_item():

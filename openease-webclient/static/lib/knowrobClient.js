@@ -156,7 +156,7 @@ function KnowrobClient(){
       that.ros.on('error', function(error) {
           console.log('Error connecting to websocket server: ', error);
           $.ajax({
-            url: '/knowrob/ensure_started',
+            url: '/api/v1.0/ensure_started_by_session',
             type: "GET",
             contentType: "application/json",
             dataType: "json"
@@ -469,7 +469,7 @@ function KnowrobClient(){
         if(that.ros) that.ros.close(); // force reconnect
         
         $.ajax({
-            url: '/knowrob/reset',
+            url: '/api/v1.0/reset_by_session',
             type: "POST",
             contentType: "application/json",
             dataType: "json"
