@@ -1,7 +1,6 @@
 FROM ubuntu:16.04
 MAINTAINER Daniel Beßler, danielb@cs.uni-bremen.de	
 
-ARG HOST_IP=172.17.0.1
 ARG ROS_SOURCES="http://packages.ros.org/ros/ubuntu"
 
 # AR-Helper required services for this Dockerfile: ?with-service=apt&with-service=gradle&with-service=sh

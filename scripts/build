@@ -4,7 +4,30 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 declare -A BUILDOPTS=()
 hasargs=false
 
-for var in "$@"
+PARAMS=""
+while (( "$#" )); do
+  case "$1" in
+    --ar-url)
+      AR_URL=$2
+      shift 2
+      ;;
+    --ar-mode)
+      AR_MODE=$2
+      shift 2
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      PARAMS="$PARAMS $1"
+      shift
+      ;;
+  esac
+done
+eval set -- "$PARAMS"
+
+for var in $PARAMS
 do
     BUILDOPTS[$var]=true
     hasargs=true
@@ -42,7 +65,17 @@ function build() {
 	else
 		_NOCACHE=""
 	fi
-	cd $DIR/../$1 && docker build $_NOCACHE -t $2 .
+	if [ -n "$AR_URL" ] && [ -n "$AR_MODE" ] && [ -n "$3" ]; then
+		cd $DIR/../$1 && docker build $_NOCACHE --build-arg AR="$AR_URL/helper/$AR_MODE/$3" -t $2 .
+	else
+		cd $DIR/../$1 && docker build $_NOCACHE -t $2 .
+	fi
+}
+
+function start_caching_old() {
+       echo "Starting caching containers..."
+       $DIR/start-apt-cacher
+       $DIR/start-nexus
 }
 
 if [[ -z "$OPENEASE_ROS_DISTRIBUTION" ]]; then
@@ -51,23 +84,18 @@ fi
 
 if [ "${BUILDOPTS["all"]}" == true ] || [ "${BUILDOPTS["knowrob"]}" == true ]; then
        HOST_IP=`ip route list dev docker0 | awk 'NR==1 {print $NF}'`
-
-       echo "Starting caching containers..."
-       $DIR/start-apt-cacher
-       $DIR/start-nexus
-
-
        if [ "$OPENEASE_ROS_DISTRIBUTION" == "hydro" ] ; then
+       		start_caching_old
                 echo "Building hydro"
 	        #build hydro/hydro-swi openease/hydro-swi
                 $DIR/../hydro/hydro-swi/build.sh
 	        build hydro/hydro-knowrob-daemon openease/hydro-knowrob-daemon
        elif [ "$OPENEASE_ROS_DISTRIBUTION" == "kinetic" ] ; then
 	        echo "Building kinetic"
-	        #build kinetic/kinetic-swi openease/kinetic-swi
-                $DIR/../kinetic/kinetic-swi/build.sh
-	        build kinetic/kinetic-knowrob-daemon openease/kinetic-knowrob-daemon
+            build kinetic/kinetic-swi openease/kinetic-swi "?with-service=apt&with-service=gradle&with-service=sh"
+	        build kinetic/kinetic-knowrob-daemon openease/kinetic-knowrob-daemon "?with-service=apt&with-service=gradle&with-service=sh"
        else	
+       		start_caching_old
 	        echo "Building indigo"
 	        #build indigo/indigo-swi openease/indigo-swi
                 $DIR/../indigo/indigo-swi/build.sh
@@ -77,14 +105,14 @@ fi
 
 
 if [ "${BUILDOPTS["dockerbridge"]}" == true ] || [ "${BUILDOPTS["default"]}" == true ] || [ "${BUILDOPTS["all"]}" == true ]; then
-	build dockerbridge knowrob/dockerbridge
+	build dockerbridge knowrob/dockerbridge "?with-service=apt&with-service=pip"
 fi
 
 if [ "${BUILDOPTS["webapps"]}" == true ] || [ "${BUILDOPTS["default"]}" == true ] || [ "${BUILDOPTS["all"]}" == true ]; then
 	build user_data knowrob/user_data
-	build flask openease/flask
+	build flask openease/flask "?with-service=apt&with-service=pip&with-service=npm"
     build dns openease/dns
-	build openease-webclient openease/webclient
+	build openease-webclient openease/webclient "?with-service=apt&with-service=npm"
 	#build webapps/easeapp openease/easeapp
 	#build webapps/login openease/login
 	#build webapps/knowrob openease/knowrob
