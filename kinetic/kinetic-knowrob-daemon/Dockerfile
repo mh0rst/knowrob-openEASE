@@ -12,7 +12,7 @@ WORKDIR /home/ros/src
 RUN /usr/bin/python /opt/ros/kinetic/bin/catkin_init_workspace
 
 RUN echo "Cloning repositories..."
-RUN git clone https://github.com/mh0rst/knowrob.git -b kinetic && \
+RUN git clone https://github.com/knowrob/knowrob.git -b kinetic && \
     git clone https://github.com/knowrob/knowrob_addons.git -b kinetic && \
     git clone https://github.com/code-iai/iai_maps.git && \
     git clone https://github.com/code-iai/iai_common_msgs.git && \
